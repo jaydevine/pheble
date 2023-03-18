@@ -1,7 +1,6 @@
-#' Global variables.
-#'
+#' @name Global variables.
+#' @title Global variables.
 #' @import utils
-#' @export
 utils::globalVariables(c("Importance", "Balanced Accuracy"))
 
 #' Pipe.
