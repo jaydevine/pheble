@@ -1,0 +1,53 @@
+Package: pheble
+Title: Classifying High-Dimensional Phenotypes with Ensemble Learning
+Version: 0.0.0.9000
+Authors@R: 
+    person("Jay", "Devine", , "jay.devine1@ucalgary.ca", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-0600-1058"))
+Description: A system for binary and multi-class classification of high-dimensional phenotypic data
+             using ensemble learning. By combining predictions from different classification models,
+             this package attempts to improve performance over traditional models. The preprocessing, 
+             training, validation, and testing are performed end-to-end, thus minimizing user input and 
+             simplifying the process of classification. 
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports: 
+    adabag,
+    base,
+    C50,
+    caret,
+    caTools,
+    data.table,
+    doParallel,
+    dplyr,
+    e1071,
+    earth,
+    evtree,
+    frbs,
+    glmnet,
+    gmodels,
+    hda,
+    HDclassif,
+    ipred,
+    kernlab,
+    kknn,
+    klaR,
+    magrittr,
+    MASS,
+    Matrix,
+    mda,
+    MLmetrics,
+    nnet,
+    parallel,
+    party,
+    pls,
+    randomForest,
+    rpartScore,
+    sparseLDA,
+    stats,
+    themis
+Depends: 
+    R (>= 2.10)
+LazyData: true
