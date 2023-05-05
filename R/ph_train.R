@@ -1,25 +1,21 @@
 #' Generate predictions for phenotype ensemble.
 #'
-#' The \code{ph_train} function automatically trains a set of binary or multi-class classification models to ultimately build a new dataset of predictions. The data preprocessing and hyperparameter tuning are handled internally to minimize user input and simplify the training.
-
-#' @param df A \code{data.frame} containing a column of unique ids, a column of classes, and an arbitrary number of \code{numeric} columns.
-#' @param ids_col A \code{character} value for the name of the ids column.
-#' @param class_col A \code{character} value for the name of the class column.
-#' @param vali_pct A \code{numeric} value for the percentage (decimal) of training data to use as validation data: 0.15 (default).
-#' @param test_pct A \code{numeric} value for the percentage (decimal) of total data to use as test data: 0.15 (default).
-#' @param pca A \code{logical} value for completing principal component analysis on the dataset to reduce dimensionality: \code{TRUE} (default).
-#' @param pca_pct A \code{numeric} value for the proportion of variance decimal) to subset the PCA with: 0.95 (default).
-#' @param resample_method A \code{character} value for the resampling training method: "boot" (default), "cv", LOOCV", "repeatedcv".
-#' @param number An \code{integer} value for the number of resampling iterations (25 default for boot) or folds (10 default for cross-validation).
-#' @param repeats An \code{integer} value for the number of sets of folds for repeated cross-validation.
-#' @param search A \code{character} value for the hyperparameter search strategy: "random" (default), "grid".
-#' @param sampling A \code{character} value for the sampling strategy, sometimes used to fix class imbalances: \code{NULL} (default), "up", "down", "smote".
-#' @param n_cores An \code{integer} value for the number of cores to include in the cluster: detectCores() - 1 (default).
+#' The \code{ph_train} function automatically trains a set of binary or multi-class classification models to ultimately
+#' build a new dataset of predictions. The data preprocessing and hyperparameter tuning are handled internally to
+#' minimize user input and simplify the training.
+#'
+#' @param train_df A \code{data.frame} containing a class column and the training data.
+#' @param vali_df A \code{data.frame} containing a class column and the validation data.
+#' @param test_df A \code{data.frame} containing a class column and the test d
+#' @param class_col A \code{character} value for the name of the class column shared across the train, validation, and test sets.
+#' @param ctrl A \code{list} containing the resampling strategy (e.g., "boot") and other parameters for \code{trainControl}. Automatically create one via \code{ph_ctrl} or manually create it with \code{trainControl}.
+#' @param train_seed A \code{numeric} value to set the training seed and control the randomness of creating resamples: 123 (default).
+#' @param n_cores An \code{integer} value for the number of cores to include in the cluster: 2 (default). We highly recommend increasing this value to, e.g., parallel::detectCores() - 1.
 #' @param task A \code{character} value for the type of classification \code{task}: "multi" (default), "binary".
 #' @param methods A \code{character} value enumerating the names (at least two, unless "all") of the classification methods to ensemble: "all" (default).
 #' \itemize{
-#'   \item If the \code{task} is "binary", there are 33 methods to choose from: "AdaBag", "AdaBoost.M1", "C5.0", "evtree", "glmnet", "hda", "kernelpls", "kknn", "lda", "loclda", "mda", "nb", "nnet", "pda", "pls", "qda", "rda", "rf", "sparseLDA", "stepLDA", "stepQDA", "treebag", "svmLinear", "svmPoly","svmRadial", "gaussprLinear" (slow), "gaussprPoly" (slow), "gaussprRadial" (slow), "bagEarthGCV", "cforest", "earth", "fda", "hdda".
-#'   \item If the \code{task} is "multi", 30:  "AdaBag", "AdaBoost.M1",  "C5.0", "evtree", "glmnet", "hda", "kernelpls", "kknn", "lda", "loclda", "mda", "nb", "nnet", "pda", "pls", "qda", "rda", "rf", "sparseLDA", "stepLDA", "stepQDA", "treebag", "svmLinear", "svmPoly", "svmRadial", "bagEarthGCV", "cforest", "earth", "fda", "hdda".
+#'   \item If \code{task = "binary"}, there are 33 methods to choose from: "AdaBag", "AdaBoost.M1", "C5.0", "evtree", "glmnet", "hda", "kernelpls", "kknn", "lda", "loclda", "mda", "nb", "nnet", "pda", "pls", "qda", "rda", "rf", "sparseLDA", "stepLDA", "stepQDA", "treebag", "svmLinear", "svmPoly","svmRadial", "gaussprLinear" (slow), "gaussprPoly" (slow), "gaussprRadial" (slow), "bagEarthGCV", "cforest", "earth", "fda", "hdda".
+#'   \item If \code{task = "multi"}, there are 30 methods to choose from:  "AdaBag", "AdaBoost.M1",  "C5.0", "evtree", "glmnet", "hda", "kernelpls", "kknn", "lda", "loclda", "mda", "nb", "nnet", "pda", "pls", "qda", "rda", "rf", "sparseLDA", "stepLDA", "stepQDA", "treebag", "svmLinear", "svmPoly", "svmRadial", "bagEarthGCV", "cforest", "earth", "fda", "hdda".
 #' }
 #' @param metric A \code{character} value for which summary metric should be used to select the optimal model: "ROC" (default for "binary") and "Kappa" (default for "multi")
 #' @param tune_length If \code{search = "random"} (default), this is an \code{integer} value for the maximum number of hyperparameter combinations to test for each training model in the ensemble; if \code{search = "grid"}, this is an \code{integer} value for the number of levels of each hyperparameter to test for each model.
@@ -33,11 +29,9 @@
 #'    \tab \cr
 #'    \code{test_df} \tab The test data frame. \cr
 #'    \tab \cr
-#'    \code{splits} \tab The training, validation, and test set indices. \cr
-#'    \tab \cr
 #'    \code{task} \tab The type of classification task. \cr
 #'    \tab \cr
-#'    \code{ctrl} \tab A \code{trainControl} object. \cr
+#'    \code{ctrl} \tab A list of resampling parameters used in \code{trainControl}. \cr
 #'    \tab \cr
 #'    \code{methods} \tab The names of the classification methods to ensemble. \cr
 #'    \tab \cr
@@ -50,12 +44,57 @@
 #'    \code{tune_length} \tab The maximum number of hyperparameter combinations ("random") or individual hyperparameter depth ("grid").  \cr
 #' }
 #' @export
-ph_train <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15, pca = TRUE,
-                     pca_pct = 0.95, resample_method = "boot", number = ifelse(grepl("cv", resample_method, ignore.case = TRUE), 10, 25),
-                     repeats = ifelse(grepl("dcv$", resample_method, ignore.case = TRUE), 3, NA),
-                     search = "random", sampling = NULL, n_cores = parallel::detectCores() - 1, task = "multi", methods = "all",
-                     metric = ifelse(task == "multi", "Kappa", "ROC"), tune_length = 10, quiet = FALSE)
+#' @examples
+#' ## Import data.
+#' data(ph_ants)
+#' ## Remove anomalies with autoencoder.
+#' rm_outs <- ph_anomaly(df = ph_ants, ids_col = "Biosample", class_col = "Species",
+#'                       method = "ae")
+#' ## Preprocess anomaly-free data frame into train, validation, and test sets
+#' ## with PCs as predictors.
+#' pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
+#'                   vali_pct = 0.15, test_pct = 0.15, dim_red = "pca")
+#' ## Echo control object for train function.
+#' ctrl <- ph_ctrl(ph_ants$Species, resample_method = "boot")
+#' ## Train all models for ensemble.
+#' \dontrun{
+#' train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
+#'                          test_df = pc_dfs$test_df, class_col = "Species", ctrl = ctrl,
+#'                          resample_method = "boot", task = "multi", methods = "all",
+#'                          tune_length = 5, quiet = FALSE)
+#' }
+#' ## You can also train just a few (e.g., nnet, qda, rda), although more is preferable.
+#' train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
+#'                          test_df = pc_dfs$test_df, class_col = "Species",
+#'                          ctrl = ctrl, resample_method = "boot", task = "multi",
+#'                          methods = c("nnet", qda", "rda"), tune_length = 5,
+#'                          quiet = FALSE)
+ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
+                     train_seed = 123, n_cores = 2, task = "multi", methods = "all",
+                     metric = ifelse(task == "multi", "Kappa", "ROC"),
+                     tune_length = 10, quiet = FALSE)
 {
+    if (!is.character(class_col)) { class_col <- as.character(class_col) }
+    if (class_col %in% colnames(train_df) != TRUE |
+        class_col %in% colnames(vali_df) != TRUE |
+        class_col %in% colnames(test_df) != TRUE)
+        stop("Either the class column name is not in one or more of the data frames or it is inconsistent between data frames.")
+    train_df <- train_df[, c(which(colnames(train_df) == class_col), which(colnames(train_df) != class_col))]
+    vali_df <- vali_df[, c(which(colnames(vali_df) == class_col), which(colnames(vali_df) != class_col))]
+    test_df <- test_df[, c(which(colnames(test_df) == class_col), which(colnames(test_df) != class_col))]
+    colnames(train_df)[which(colnames(train_df) == class_col)] <- "class"
+    colnames(vali_df)[which(colnames(vali_df) == class_col)] <- "class"
+    colnames(test_df)[which(colnames(test_df) == class_col)] <- "class"
+    if (all.equal(levels(train_df$class), levels(vali_df$class)) != TRUE |
+        all.equal(levels(train_df$class), levels(test_df$class)) != TRUE |
+        all.equal(levels(vali_df$class), levels(test_df$class)) != TRUE)
+        stop("The class levels are inconsistent between data frames.")
+    if (ncol(train_df) != ncol(vali_df) |
+        ncol(train_df) != ncol(test_df) |
+        ncol(vali_df) != ncol(test_df))
+        stop("The number of predictors (columns) are inconsistent between data frames.")
+    if (!is.numeric(train_seed))
+        stop("Seed must be numeric (an integer).")
     if (!is.numeric(n_cores))
         stop("Number of cores must be numeric (an integer).")
     if (!(task %in% c("multi", "binary")))
@@ -79,19 +118,9 @@ ph_train <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15, p
     cl <- parallel::makeCluster(n_cores)
     doParallel::registerDoParallel(cl)
     # Prepare data.
-    pre_df <- ph_prep(df = df, ids_col = ids_col, class_col = class_col,
-                      vali_pct = vali_pct, test_pct = test_pct, pca = pca,
-                      pca_pct = pca_pct)
-    if (quiet != TRUE) { message("Preprocessing complete.") }
-    # Explicitly define training, validation, and testing variables.
-    splits <- list(pre_df$train_split, pre_df$vali_split, pre_df$test_split)
-    names(splits)[1:3] <- c("train_split", "vali_split", "test_split")
-    train_df <- pre_df$train_df
-    vali_df <- pre_df$vali_df
-    test_df <- pre_df$test_df
-    train_x <- pre_df$train_df[, -which(names(pre_df$train_df) %in% c("class"))]
-    vali_x <- pre_df$vali_df[, -which(names(pre_df$vali_df) %in% c("class"))]
-    test_x <- pre_df$test_df[, -which(names(pre_df$test_df) %in% c("class"))]
+    train_x <- train_df[, -which(names(train_df) %in% c("class"))]
+    vali_x <- vali_df[, -which(names(vali_df) %in% c("class"))]
+    test_x <- test_df[, -which(names(test_df) %in% c("class"))]
     train_df$class <- as.factor(train_df$class)
     vali_df$class <- as.factor(vali_df$class)
     test_df$class <- as.factor(test_df$class)
@@ -103,12 +132,11 @@ ph_train <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15, p
     vali_check <- which(vali_levels$Freq < 2)
     test_check <- which(test_levels$Freq < 2)
     if (length(vali_check) > 0)
-      stop(cat(paste0(vali_levels$Var1[vali_check], " needs at least two observations in the validation set.", "\n"), sep = ""))
+        stop(cat(paste0(vali_levels$Var1[vali_check], " needs at least two observations in the validation set.", "\n"), sep = ""))
     if (length(test_check) > 0)
-      stop(cat(paste0(test_levels$Var1[test_check], " needs at least two observations in the test set.", "\n"), sep = ""))
-    # Define resampling strategy.
-    ctrl <- ph_ctrl(class = train_df$class, resample_method = resample_method, number = number,
-                    repeats = repeats, search = search, sampling = sampling)
+        stop(cat(paste0(test_levels$Var1[test_check], " needs at least two observations in the test set.", "\n"), sep = ""))
+    if (!is.list(ctrl))
+        stop("Control object must be a list.")
     # Initialize classification loop.
     train_models <- list()
     if (task == "binary") {
@@ -137,6 +165,7 @@ ph_train <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15, p
             for (i in par_methods) {
                 iter_a <- iter_a + 1
                 if (quiet != TRUE) { message(paste0("Working on ", i, " model.")) }
+                set.seed(train_seed)
                 train_models[[iter_a]] <- try(caret::train(x = train_x, y = train_df$class, metric = metric,
                                                            method = i, allowParallel = TRUE,
                                                            trControl = ctrl, tuneLength = tune_length),
@@ -150,6 +179,7 @@ ph_train <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15, p
             for (i in formula_methods) {
                 iter_b <- iter_b + 1
                 if (quiet != TRUE) { message(paste0("Working on ", i, " model.")) }
+                set.seed(train_seed)
                 train_models[[iter_b]] <- try(caret::train(class~., data = train_df, metric = metric, method = i,
                                                            allowParallel = TRUE, trControl = ctrl,
                                                            tuneLength = tune_length),
@@ -163,6 +193,7 @@ ph_train <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15, p
             for (i in nopar_methods) {
                 iter_c <- iter_c + 1
                 if (quiet != TRUE) { message(paste0("Working on ", i, " model.")) }
+                set.seed(train_seed)
                 train_models[[iter_c]] <- try(caret::train(x = train_x, y = train_df$class, metric = metric, method = i,
                                                            trControl = ctrl, tuneLength = tune_length),
                                               silent = TRUE)
@@ -196,6 +227,7 @@ ph_train <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15, p
             for (i in par_methods) {
                 iter_a <- iter_a + 1
                 if (quiet != TRUE) { message(paste0("Working on ", i, " model.")) }
+                set.seed(train_seed)
                 train_models[[iter_a]] <- try(caret::train(x = train_x, y = train_df$class, metric = metric,
                                                            method = i, allowParallel = TRUE,
                                                            trControl = ctrl, tuneLength = tune_length),
@@ -209,6 +241,7 @@ ph_train <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15, p
             for (i in formula_methods) {
                 iter_b <- iter_b + 1
                 if (quiet != TRUE) { message(paste0("Working on ", i, " model.")) }
+                set.seed(train_seed)
                 train_models[[iter_b]] <- try(caret::train(class~., data = train_df, metric = metric, method = i,
                                                            allowParallel = TRUE, trControl = ctrl,
                                                            tuneLength = tune_length),
@@ -222,6 +255,7 @@ ph_train <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15, p
             for (i in nopar_methods) {
                 iter_c <- iter_c + 1
                 if (quiet != TRUE) { message(paste0("Working on ", i, " model.")) }
+                set.seed(train_seed)
                 train_models[[iter_c]] <- try(caret::train(x = train_x, y = train_df$class, metric = metric, method = i,
                                                            trControl = ctrl, tuneLength = tune_length),
                                               silent = TRUE)
@@ -239,6 +273,6 @@ ph_train <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15, p
     on.exit(parallel::stopCluster(cl))
     # Output vars.
     list(train_models = train_models, train_df = train_df, vali_df = vali_df, test_df = test_df,
-         splits = splits, task = task, ctrl = ctrl, methods = methods,
-         search = search, n_cores = n_cores, metric = metric, tune_length = tune_length)
+         task = task, ctrl = ctrl, methods = methods, search = search, n_cores = n_cores,
+         metric = metric, tune_length = tune_length)
 }

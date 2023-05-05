@@ -6,16 +6,23 @@
 #' @param class_col A \code{character} value for the column name of the actual classes.
 #' @returns A \code{data.frame} of column-wise class predictions with equivalent class levels.
 #' @export
-ph_equate <- function(df, class_col)
+#' @examples
+#' ## Make data frame of predicted classes with different levels. One column
+#' ## should contain the observed classes with every possible level.
+#' obs <- c("A", "C", "B", "D", "E")
+#' method_a <- c("A", "B", "B", "C", "D")
+#' method_b <- c("A", "C", "B", "D", "C")
+#' method_c <- c("A", "C", "B", "B", "C")
+#' df <- data.frame(method_a, method_b, method_c)
+#' df <- ph_equate(df = df, class = obs)
+ph_equate <- function(df, class)
 {
-    if (!is.character(class_col)) { class_col <- as.character(class_col) }
-    # Ensure that the actual class column is the first column.
-    df <- df[, c(which(colnames(df) == class_col), which(colnames(df) != class_col))]
-    i <- 1
-    # Move through remainder of data frame and ensure that each column has the same levels vector as the actual class column.
-    while (i < length(names(df))) {
+    df <- as.data.frame(df)
+    if (!is.factor(class))
+        stop("Class must be a factor).")
+    for (i in 1:ncol(df)) {
+        df[, i] <- factor(df[, i], levels = unique(class), ordered = FALSE)
         i <- i + 1
-        df[, i] <- factor(df[, i], levels = rev(unique(df[, 1])), ordered = TRUE)
     }
     return(df)
 }

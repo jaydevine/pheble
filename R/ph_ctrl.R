@@ -1,6 +1,7 @@
 #' Parameters for resampling and training a dataset.
 #'
-#' The \code{ph_ctrl} function automatically generates a \code{trControl} object. This can be used in the \code{train} function to automatically tune hyperparameters for every classification model in the ensemble.
+#' The \code{ph_ctrl} function automatically generates a \code{trControl} object. This can be used in the \code{train}
+#' function to automatically tune hyperparameters for every classification model in the ensemble.
 #'
 #' @param class A \code{factor} value for training data classes.
 #' @param resample_method A \code{character} value for the resampling training method: "boot" (default), "cv", LOOCV", "repeatedcv".
@@ -10,6 +11,11 @@
 #' @param sampling A \code{character} value for the sampling strategy, sometimes used to fix class imbalances: \code{NULL} (default), "up", "down", "smote".
 #' @returns A \code{trainControl} object for the \code{train} function.
 #' @export
+#' @examples
+#' ## Import data.
+#' data(ph_ants)
+#' ## Echo control object for train function.
+#' ctrl <- ph_ctrl(ph_ants$Species, resample_method = "boot")
 ph_ctrl <- function(class, resample_method = "boot", number = ifelse(grepl("cv", resample_method, ignore.case = TRUE), 10, 25),
                     repeats = ifelse(grepl("dcv$", resample_method, ignore.case = TRUE), 3, NA), search = "random",
                     sampling = NULL)

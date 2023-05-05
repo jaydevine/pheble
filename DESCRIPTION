@@ -1,5 +1,5 @@
 Package: pheble
-Title: Classifying High-Dimensional Phenotypes with Ensemble Learning
+Title: Classifying high-dimensional phenotypes with ensemble learning
 Version: 0.0.0.9000
 Authors@R: 
     person("Jay", "Devine", , "jay.devine1@ucalgary.ca", role = c("aut", "cre"),
@@ -52,3 +52,5 @@ Imports:
 Depends: 
     R (>= 2.10)
 LazyData: true
+Suggests: 
+    h2o

@@ -9,13 +9,10 @@ ph_ensemble(
   train_df,
   vali_df,
   test_df,
-  class_col = "class",
-  resample_method = "boot",
-  number = ifelse(grepl("cv", resample_method, ignore.case = TRUE), 10, 25),
-  repeats = ifelse(grepl("dcv$", resample_method, ignore.case = TRUE), 3, NA),
-  search = "random",
-  sampling = NULL,
-  n_cores = parallel::detectCores() - 1,
+  class_col,
+  ctrl,
+  train_seed = 123,
+  n_cores = 2,
   task = "multi",
   metric = ifelse(task == "multi", "Kappa", "ROC"),
   top_models = 3,
@@ -35,17 +32,11 @@ ph_ensemble(
 
 \item{class_col}{A \code{character} value for the name of the class column. This should be consistent across data frames.}
 
-\item{resample_method}{A \code{character} value for the resampling training method: "boot" (default), "cv", LOOCV", "repeatedcv".}
+\item{ctrl}{A \code{list} containing the resampling strategy (e.g., "boot") and other parameters for \code{trainControl}. Automatically create one via \code{ph_ctrl} or manually create it with \code{trainControl}.}
 
-\item{number}{An \code{integer} value for the number of resampling iterations (25 default for boot) or folds (10 default for cross-validation).}
+\item{train_seed}{A \code{numeric} value to set the training seed and control the randomness of creating resamples: 123 (default).}
 
-\item{repeats}{An \code{integer} value for the number of sets of folds for repeated cross-validation.}
-
-\item{search}{A \code{character} value for the hyperparameter search strategy: "random" (default), "grid".}
-
-\item{sampling}{A \code{character} value for the sampling strategy, sometimes used to fix class imbalances: \code{NULL} (default), "up", "down", "smote".}
-
-\item{n_cores}{An \code{integer} value for the number of cores to include in the cluster: detectCores() - 1 (default).}
+\item{n_cores}{An \code{integer} value for the number of cores to include in the cluster: 2 (default). We highly recommend increasing this value to, e.g., parallel::detectCores() - 1.}
 
 \item{task}{A \code{character} value for the type of classification \code{task}: "multi" (default), "binary".}
 
@@ -89,7 +80,7 @@ A list containing the following components:\tabular{ll}{
 \tab \cr
 \code{task} \tab The type of classification task. \cr
 \tab \cr
-\code{tuneLength} \tab The maximum number of hyperparameter combinations ("random") or individual hyperparameter depth ("grid").  \cr
+\code{tune_length} \tab The maximum number of hyperparameter combinations ("random") or individual hyperparameter depth ("grid").  \cr
 \tab \cr
 \code{top_models} \tab The number of top methods selected for the ensemble.  \cr
 \tab \cr
@@ -97,5 +88,8 @@ A list containing the following components:\tabular{ll}{
 }
 }
 \description{
-The \code{ph_ensemble} function recruits classification predictions from a list of algorithms to train an ensemble model. This can be a list of manually trained algorithms from \code{train} or, more conveniently, the output from \code{ph_train}. The hyperparameter tuning and model evaluations are handled internally to simplify the ensembling process.
+The \code{ph_ensemble} function uses classification predictions from a list of algorithms to train an ensemble model.
+This can be a list of manually trained algorithms from \code{train} or, more conveniently, the output from \code{ph_train}.
+The hyperparameter tuning and model evaluations are handled internally to simplify the ensembling process. This function
+assumes some preprocessing has been performed, hence the training, validation, and test set requirements.
 }

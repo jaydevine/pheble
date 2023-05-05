@@ -4,21 +4,15 @@
 \alias{ph_eval}
 \title{Evaluate a phenotype classification model.}
 \usage{
-ph_eval(df, model, class)
+ph_eval(pred, obs)
 }
 \arguments{
-\item{df}{A \code{data.frame} of unseen data (e.g., validation or test data) that relates to the training data with which \code{model} was trained.}
+\item{pred}{A \code{factor} value of predicted classes.}
 
-\item{model}{A \code{train} model.}
-
-\item{class}{A (\code{factor}) value of the actual classes of unseen data.}
+\item{obs}{A \code{factor} value of the observed or actual classes.}
 }
 \value{
-A list containing the following components:\tabular{ll}{
-\code{preds} \tab The class predictions. \cr
-\tab \cr
-\code{cm} \tab Evaluation results from the confusion matrix; for the multi-class case, the results are averaged across all class levels. \cr
-}
+A \code{data.frame} of confusion matrix evaluation results; for the multi-class case, the results are averaged across all class levels.
 }
 \description{
 The \code{ph_eval} function generates a confusion matrix for binary or multi-class classification; for the multi-class case, the results are averaged across all class levels.

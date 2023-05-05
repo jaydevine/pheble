@@ -10,8 +10,15 @@ ph_prep(
   class_col,
   vali_pct = 0.15,
   test_pct = 0.15,
-  pca = TRUE,
-  pca_pct = 0.95
+  split_seed = 123,
+  dim_red = "pca",
+  pca_pct = ifelse(dim_red == "pca", 0.95, NULL),
+  max_mem_size = ifelse(dim_red == "ae", "15g", NULL),
+  port = ifelse(dim_red == "ae", 54321, NULL),
+  train_seed = ifelse(dim_red == "ae", 123, NULL),
+  hyper_params = ifelse(dim_red == "ae", "default", NULL),
+  search = ifelse(dim_red == "ae", "random", NULL),
+  tune_length = ifelse(dim_red == "ae", 100, NULL)
 )
 }
 \arguments{
@@ -25,9 +32,23 @@ ph_prep(
 
 \item{test_pct}{A \code{numeric} value for the percentage of total data to use as test data: 0.15 (default).}
 
-\item{pca}{A \code{logical} value for completing principal component analysis on the dataset to reduce dimensionality: \code{TRUE} (default).}
+\item{split_seed}{A \code{numeric} value to set the seed and control the randomness of splitting the data: 123 (default).}
 
-\item{pca_pct}{A \code{numeric} value for the proportion of variance to subset the PCA with: 0.95 (default).}
+\item{dim_red}{A \code{character} value for the dimensionality reduction method: "pca" (default), "ae", "none".}
+
+\item{pca_pct}{If \code{dim_red = "pca"}, a \code{numeric} value for the proportion of variance to subset the PCA with: 0.95 (default).}
+
+\item{max_mem_size}{If \code{dim_red = "ae"}, a \code{character} value for the memory of an h2o session: "15g" (default).}
+
+\item{port}{A \code{numeric} value for the port number of the H2O server.}
+
+\item{train_seed}{A \code{numeric} value to set the control the randomness of creating resamples: 123 (default).}
+
+\item{hyper_params}{A \code{list} of hyperparameters to perform a grid search. the "default" list is: list(missing_values_handling = "Skip", activation = c("Rectifier", "Tanh"), hidden = list(5, 25, 50, 100, 250, 500, nrow(df_h2o)), input_dropout_ratio = c(0, 0.1, 0.2, 0.3), rate = c(0, 0.01, 0.005, 0.001)).}
+
+\item{search}{If \code{dim_red = "ae"}, a \code{character} value for the hyperparameter search strategy: "random" (default), "grid".}
+
+\item{tune_length}{If \code{dim_red = "ae"}, a \code{numeric} value (integer) for either the maximum number of hyperparameter combinations ("random") or individual hyperparameter depth ("grid").}
 }
 \value{
 A list containing the following components:\tabular{ll}{
@@ -47,11 +68,32 @@ A list containing the following components:\tabular{ll}{
 \tab \cr
 \code{test_pct} \tab The percentage of total data used as test data. \cr
 \tab \cr
-\code{pca} \tab The training set \code{prcomp} object. \cr
-\tab \cr
-\code{pca_pct} \tab The proportion of variance used to subset the PCA. \cr
+\code{dim_red} \tab The dimensionality reduction method. \cr
 }
 }
 \description{
-The \code{ph_prep} function splits a data frame into training, validation, and test sets, all while ensuring that every class is represented in each dataset. By default, it performs a Principal Component Analysis on the training set data and projects the validation and test data into that space.
+The \code{ph_prep} function splits a data frame into training, validation, and test sets, all while ensuring that
+every class is represented in each dataset. By default, it performs a Principal Component Analysis on the training
+set data and projects the validation and test data into that space. If a non-linear dimensionality reduction
+strategy is preferred instead, an autoencoder can be used to extract deep features. Note that the parameters
+\code{max_mem_size}, \code{activation}, \code{hidden}, \code{dropout_ratio}, \code{rate}, \code{search}, and
+\code{tune_length} are \code{NULL} unless an autoencoder, \code{dim_red = "ae"}, is used. In this case,
+lists or vectors can be supplied to these parameters (see parameter details) to perform a grid search for the
+optimal hyperparameter combination. The autoencoder with the lowest reconstruction error is selected as
+the best model.
+}
+\examples{
+## Import data.
+data(ph_ants)
+## Remove anomalies with autoencoder.
+rm_outs <- ph_anomaly(df = ph_ants, ids_col = "Biosample", class_col = "Species",
+                      method = "ae")
+## Preprocess anomaly-free data frame into train, validation, and test sets with
+## PCs as predictors.
+pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
+                  vali_pct = 0.15, test_pct = 0.15, dim_red = "pca")
+## Alternatively, preprocess data frame into train, validation, and test sets with
+## deep features as predictors.
+ae_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
+                  vali_pct = 0.15, test_pct = 0.15, dim_red = "ae", port = 50001)
 }

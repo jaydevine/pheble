@@ -17,3 +17,13 @@ A \code{data.frame} of column-wise class predictions with equivalent class level
 \description{
 The \code{ph_equate} function ensures that the factor levels in all columns are equal. When classification are heavily biased or inaccurate, they can return new class predictions that do not contain every level in the original data. This can interfere with model evaluation functions e.g. via a confusion matrix.
 }
+\examples{
+## Make data frame of predicted classes with different levels. One column
+## should contain the observed classes with every possible level.
+obs <- c("A", "C", "B", "D", "E")
+method_a <- c("A", "B", "B", "C", "D")
+method_b <- c("A", "C", "B", "D", "C")
+method_c <- c("A", "C", "B", "B", "C")
+df <- data.frame(obs, method_a, method_b, method_c)
+df <- ph_equate(df = df, class_col = "obs")
+}

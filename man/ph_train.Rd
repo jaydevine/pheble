@@ -5,19 +5,13 @@
 \title{Generate predictions for phenotype ensemble.}
 \usage{
 ph_train(
-  df,
-  ids_col,
+  train_df,
+  vali_df,
+  test_df,
   class_col,
-  vali_pct = 0.15,
-  test_pct = 0.15,
-  pca = TRUE,
-  pca_pct = 0.95,
-  resample_method = "boot",
-  number = ifelse(grepl("cv", resample_method, ignore.case = TRUE), 10, 25),
-  repeats = ifelse(grepl("dcv$", resample_method, ignore.case = TRUE), 3, NA),
-  search = "random",
-  sampling = NULL,
-  n_cores = parallel::detectCores() - 1,
+  ctrl,
+  train_seed = 123,
+  n_cores = 2,
   task = "multi",
   methods = "all",
   metric = ifelse(task == "multi", "Kappa", "ROC"),
@@ -26,38 +20,26 @@ ph_train(
 )
 }
 \arguments{
-\item{df}{A \code{data.frame} containing a column of unique ids, a column of classes, and an arbitrary number of \code{numeric} columns.}
+\item{train_df}{A \code{data.frame} containing a class column and the training data.}
 
-\item{ids_col}{A \code{character} value for the name of the ids column.}
+\item{vali_df}{A \code{data.frame} containing a class column and the validation data.}
 
-\item{class_col}{A \code{character} value for the name of the class column.}
+\item{test_df}{A \code{data.frame} containing a class column and the test d}
 
-\item{vali_pct}{A \code{numeric} value for the percentage (decimal) of training data to use as validation data: 0.15 (default).}
+\item{class_col}{A \code{character} value for the name of the class column shared across the train, validation, and test sets.}
 
-\item{test_pct}{A \code{numeric} value for the percentage (decimal) of total data to use as test data: 0.15 (default).}
+\item{ctrl}{A \code{list} containing the resampling strategy (e.g., "boot") and other parameters for \code{trainControl}. Automatically create one via \code{ph_ctrl} or manually create it with \code{trainControl}.}
 
-\item{pca}{A \code{logical} value for completing principal component analysis on the dataset to reduce dimensionality: \code{TRUE} (default).}
+\item{train_seed}{A \code{numeric} value to set the training seed and control the randomness of creating resamples: 123 (default).}
 
-\item{pca_pct}{A \code{numeric} value for the proportion of variance decimal) to subset the PCA with: 0.95 (default).}
-
-\item{resample_method}{A \code{character} value for the resampling training method: "boot" (default), "cv", LOOCV", "repeatedcv".}
-
-\item{number}{An \code{integer} value for the number of resampling iterations (25 default for boot) or folds (10 default for cross-validation).}
-
-\item{repeats}{An \code{integer} value for the number of sets of folds for repeated cross-validation.}
-
-\item{search}{A \code{character} value for the hyperparameter search strategy: "random" (default), "grid".}
-
-\item{sampling}{A \code{character} value for the sampling strategy, sometimes used to fix class imbalances: \code{NULL} (default), "up", "down", "smote".}
-
-\item{n_cores}{An \code{integer} value for the number of cores to include in the cluster: detectCores() - 1 (default).}
+\item{n_cores}{An \code{integer} value for the number of cores to include in the cluster: 2 (default). We highly recommend increasing this value to, e.g., parallel::detectCores() - 1.}
 
 \item{task}{A \code{character} value for the type of classification \code{task}: "multi" (default), "binary".}
 
 \item{methods}{A \code{character} value enumerating the names (at least two, unless "all") of the classification methods to ensemble: "all" (default).
 \itemize{
-\item If the \code{task} is "binary", there are 33 methods to choose from: "AdaBag", "AdaBoost.M1", "C5.0", "evtree", "glmnet", "hda", "kernelpls", "kknn", "lda", "loclda", "mda", "nb", "nnet", "pda", "pls", "qda", "rda", "rf", "sparseLDA", "stepLDA", "stepQDA", "treebag", "svmLinear", "svmPoly","svmRadial", "gaussprLinear" (slow), "gaussprPoly" (slow), "gaussprRadial" (slow), "bagEarthGCV", "cforest", "earth", "fda", "hdda".
-\item If the \code{task} is "multi", 30:  "AdaBag", "AdaBoost.M1",  "C5.0", "evtree", "glmnet", "hda", "kernelpls", "kknn", "lda", "loclda", "mda", "nb", "nnet", "pda", "pls", "qda", "rda", "rf", "sparseLDA", "stepLDA", "stepQDA", "treebag", "svmLinear", "svmPoly", "svmRadial", "bagEarthGCV", "cforest", "earth", "fda", "hdda".
+\item If \code{task = "binary"}, there are 33 methods to choose from: "AdaBag", "AdaBoost.M1", "C5.0", "evtree", "glmnet", "hda", "kernelpls", "kknn", "lda", "loclda", "mda", "nb", "nnet", "pda", "pls", "qda", "rda", "rf", "sparseLDA", "stepLDA", "stepQDA", "treebag", "svmLinear", "svmPoly","svmRadial", "gaussprLinear" (slow), "gaussprPoly" (slow), "gaussprRadial" (slow), "bagEarthGCV", "cforest", "earth", "fda", "hdda".
+\item If \code{task = "multi"}, there are 30 methods to choose from:  "AdaBag", "AdaBoost.M1",  "C5.0", "evtree", "glmnet", "hda", "kernelpls", "kknn", "lda", "loclda", "mda", "nb", "nnet", "pda", "pls", "qda", "rda", "rf", "sparseLDA", "stepLDA", "stepQDA", "treebag", "svmLinear", "svmPoly", "svmRadial", "bagEarthGCV", "cforest", "earth", "fda", "hdda".
 }}
 
 \item{metric}{A \code{character} value for which summary metric should be used to select the optimal model: "ROC" (default for "binary") and "Kappa" (default for "multi")}
@@ -76,11 +58,9 @@ A list containing the following components:\tabular{ll}{
 \tab \cr
 \code{test_df} \tab The test data frame. \cr
 \tab \cr
-\code{splits} \tab The training, validation, and test set indices. \cr
-\tab \cr
 \code{task} \tab The type of classification task. \cr
 \tab \cr
-\code{ctrl} \tab A \code{trainControl} object. \cr
+\code{ctrl} \tab A list of resampling parameters used in \code{trainControl}. \cr
 \tab \cr
 \code{methods} \tab The names of the classification methods to ensemble. \cr
 \tab \cr
@@ -94,5 +74,7 @@ A list containing the following components:\tabular{ll}{
 }
 }
 \description{
-The \code{ph_train} function automatically trains a set of binary or multi-class classification models to ultimately build a new dataset of predictions. The data preprocessing and hyperparameter tuning are handled internally to minimize user input and simplify the training.
+The \code{ph_train} function automatically trains a set of binary or multi-class classification models to ultimately
+build a new dataset of predictions. The data preprocessing and hyperparameter tuning are handled internally to
+minimize user input and simplify the training.
 }

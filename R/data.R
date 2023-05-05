@@ -1,24 +1,28 @@
-#' Data from: Are ant supercolonies crucibles of a new major transition in evolution?
+#' Data from: The utility of cranial ontogeny for phylogenetic inference: a case study in crocodylians using geometric morphometrics
 #'
-#' Abstract: The biological hierarchy of genes, cells, organisms and societies is a fundamental reality in the living world.
-#' This hierarchy of entities did not arise ex nihilo at the origin of life, but rather has been serially generated
-#' by a succession of critical events known as ‘evolutionary transitions in individuality’ (ETIs). Given the sequential
-#' nature of ETIs, it is natural to look for candidates to form the next hierarchical tier. We analyse claims that
-#' these candidates are found among ‘supercolonies’, ant populations in which discrete nests cooperate as part of a
-#' wider collective, in ways redolent of cells in a multicellular organism. Examining earlier empirical work and new
-#' data within the recently proposed ‘Darwinian space’ framework, we offer a novel analysis of the evolutionary status
-#' of supercolonies and show how certain key conditions might be satisfied in any future process transforming these
-#' collaborative networks into true Darwinian individuals.
+#' Abstract: The degree to which the ontogeny of organisms could facilitate our understanding of phylogenetic relationships
+#' has long been a subject of contention in evolutionary biology. The famed notion that ‘ontogeny recapitulates phylogeny’ has
+#' been largely discredited, but there remains an expectation that closely related organisms undergo similar morphological
+#' transformations throughout ontogeny. To test this assumption, we used three-dimensional geometric morphometric methods to
+#' characterize the cranial morphology of 10 extant crocodylian species and construct allometric trajectories that model the
+#' post-natal ontogenetic shape changes. Using time-calibrated molecular and morphological trees, we employed a suite of
+#' comparative phylogenetic methods to assess the extent of phylogenetic signal in these trajectories. All analyses largely
+#' demonstrated a lack of significant phylogenetic signal, indicating that ontogenetic shape changes contain little phylogenetic
+#' information. Notably, some Mantel tests yielded marginally significant results when analysed with the morphological tree,
+#' which suggest that the underlying signal in these trajectories is correlated with similarities in the adult cranial morphology.
+#' However, despite these instances, all other analyses, including more powerful tests for phylogenetic signal, recovered
+#' statistical and visual evidence against the assumption that similarities in ontogenetic shape changes are commensurate with
+#' phylogenetic relatedness and thus bring into question the efficacy of using allometric trajectories for phylogenetic inference.
 #'
-#' @format ## `ph_ants`
-#' A data frame of Procrustes superimposed shape data with 1494 rows and 24 columns:
+#' @format ## `ph_crocs`
+#' A data frame of Procrustes superimposed shape data with 183 rows and 236 columns:
 #' \describe{
 #'   \item{Biosample}{Biosample}
 #'   \item{Species}{Species}
 #'   ...
 #' }
-#' @source <http://dx.doi.org/10.5061/dryad.f65bn>
-"ph_ants"
+#' @source <http://dx.doi.org/10.5061/dryad.14fn1>
+"ph_crocs"
 
 #' Data from: Sexually mediated phenotypic variation within and between sexes as a continuum structured by ecology: The mosaic nature of skeletal variation across body regions in Threespine stickleback (Gasterosteus aculeatus L.)
 #'

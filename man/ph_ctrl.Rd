@@ -30,5 +30,12 @@ ph_ctrl(
 A \code{trainControl} object for the \code{train} function.
 }
 \description{
-The \code{ph_ctrl} function automatically generates a \code{trControl} object. This can be used in the \code{train} function to automatically tune hyperparameters for every classification model in the ensemble.
+The \code{ph_ctrl} function automatically generates a \code{trControl} object. This can be used in the \code{train}
+function to automatically tune hyperparameters for every classification model in the ensemble.
+}
+\examples{
+## Import data.
+data(ph_ants)
+## Echo control object for train function.
+ctrl <- ph_ctrl(ph_ants$Species, resample_method = "boot")
 }

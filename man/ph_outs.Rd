@@ -2,7 +2,7 @@
 % Please edit documentation in R/ph_outs.R
 \name{ph_outs}
 \alias{ph_outs}
-\title{Detect outliers.}
+\title{Find outlier indices.}
 \usage{
 ph_outs(x)
 }
@@ -13,5 +13,5 @@ ph_outs(x)
 The outlier indices.
 }
 \description{
-The \code{ph_outs} function detects outliers.
+The \code{ph_outs} function computes outliers with the interquartile method.
 }
