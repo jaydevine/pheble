@@ -40,7 +40,7 @@ ph_ensemble(
 
 \item{task}{A \code{character} value for the type of classification \code{task}: "multi" (default), "binary".}
 
-\item{metric}{A \code{character} value for which summary metric should be used to select the optimal model: "ROC" (default for "binary") and "Kappa" (default for "multi")}
+\item{metric}{A \code{character} value for which summary metric should be used to select the optimal model: "ROC" (default for "binary") and "Kappa" (default for "multi"). Other options include "logLoss", "Accuracy", "Mean_Balanced_Accuracy", and "Mean_F1".}
 
 \item{top_models}{A \code{numeric} value for the top n training models to ensemble: 3 (default). Every training model is ordered according to their final metric value (e.g., "ROC" or "Kappa") and the top n models are selected.}
 

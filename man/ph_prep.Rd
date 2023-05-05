@@ -15,13 +15,13 @@ ph_prep(
   sd = NULL,
   split_seed = 123,
   method = "pca",
-  pca_pct = ifelse(method == "pca", 0.95, NULL),
-  max_mem_size = ifelse(method == "ae", "15g", NULL),
-  port = ifelse(method == "ae", 54321, NULL),
-  train_seed = ifelse(method == "ae", 123, NULL),
-  hyper_params = ifelse(method == "ae", "default", NULL),
-  search = ifelse(method == "ae", "random", NULL),
-  tune_length = ifelse(method == "ae", 100, NULL)
+  pca_pct = 0.95,
+  max_mem_size = "15g",
+  port = 54321,
+  train_seed = 123,
+  hyper_params = list(),
+  search = "random",
+  tune_length = 100
 )
 }
 \arguments{
@@ -93,9 +93,9 @@ the best model.
 }
 \examples{
 ## Import data.
-data(ph_ants)
+data(ph_crocs)
 ## Remove anomalies with autoencoder.
-rm_outs <- ph_anomaly(df = ph_ants, ids_col = "Biosample", class_col = "Species",
+rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
                       method = "ae")
 ## Preprocess anomaly-free data frame into train, validation, and test sets with
 ## PCs as predictors.

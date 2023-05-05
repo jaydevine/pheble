@@ -15,7 +15,7 @@ ph_anomaly(
   max_mem_size = "15g",
   port = 54321,
   train_seed = 123,
-  hyper_params = "default",
+  hyper_params = list(),
   search = "random",
   tune_length = 100
 )
@@ -69,13 +69,13 @@ the best model.
 }
 \examples{
 ## Import data.
-data(ph_ants)
+data(ph_crocs)
 ## Remove anomalies with autoencoder.
-rm_outs <- ph_anomaly(df = ph_ants, ids_col = "Biosample", class_col = "Species",
+rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
                       method = "ae")
 ## Alternatively, remove anomalies with extended isolation forest. Notice that
 ## port is defined, because running H2O sessions one after another can return
 ## connection errors.
-rm_outs <- ph_anomaly(df = ph_ants, ids_col = "Biosample", class_col = "Species",
+rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
                       method = "iso", port = 50001)
 }
