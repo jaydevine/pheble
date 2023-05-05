@@ -14,7 +14,7 @@
 #' @param train_seed A \code{numeric} value to set the training seed and control the randomness of creating resamples: 123 (default).
 #' @param n_cores An \code{integer} value for the number of cores to include in the cluster: 2 (default). We highly recommend increasing this value to, e.g., parallel::detectCores() - 1.
 #' @param task A \code{character} value for the type of classification \code{task}: "multi" (default), "binary".
-#' @param metric A \code{character} value for which summary metric should be used to select the optimal model: "ROC" (default for "binary") and "Kappa" (default for "multi")
+#' @param metric A \code{character} value for which summary metric should be used to select the optimal model: "ROC" (default for "binary") and "Kappa" (default for "multi"). Other options include "logLoss", "Accuracy", "Mean_Balanced_Accuracy", and "Mean_F1".
 #' @param top_models A \code{numeric} value for the top n training models to ensemble: 3 (default). Every training model is ordered according to their final metric value (e.g., "ROC" or "Kappa") and the top n models are selected.
 #' @param metalearner A \code{character} value for the algorithm used to train the ensemble: "glmnet" (default), "rf". Other methods, such as those listed in ph_train methods, may also be used.
 #' @param tune_length If \code{search = "random"} (default), this is an \code{integer} value for the maximum number of hyperparameter combinations to test for each training model in the ensemble; if \code{search = "grid"}, this is an \code{integer} value for the number of levels of each hyperparameter to test for each model.
@@ -57,15 +57,15 @@
 #' @export
 #' @examples
 #' ## Import data.
-#' data(ph_ants)
+#' data(ph_crocs)
 #' ## Remove anomalies with autoencoder.
-#' rm_outs <- ph_anomaly(df = ph_ants, ids_col = "Biosample", class_col = "Species",
+#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
 #'                       method = "ae")
 #' ## Preprocess anomaly-free data frame into train, validation, and test sets with PCs as predictors.
 #' pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species", vali_pct = 0.15,
-#'                   test_pct = 0.15, dim_red = "pca")
+#'                   test_pct = 0.15, method = "pca")
 #' ## Echo control object for train function.
-#' ctrl <- ph_ctrl(ph_ants$Species, resample_method = "boot")
+#' ctrl <- ph_ctrl(ph_crocs$Species, resample_method = "boot")
 #' ## Train all models for ensemble.
 #' train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
 #'                          test_df = pc_dfs$test_df, class_col = "Species",

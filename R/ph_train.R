@@ -17,7 +17,7 @@
 #'   \item If \code{task = "binary"}, there are 33 methods to choose from: "AdaBag", "AdaBoost.M1", "C5.0", "evtree", "glmnet", "hda", "kernelpls", "kknn", "lda", "loclda", "mda", "nb", "nnet", "pda", "pls", "qda", "rda", "rf", "sparseLDA", "stepLDA", "stepQDA", "treebag", "svmLinear", "svmPoly","svmRadial", "gaussprLinear" (slow), "gaussprPoly" (slow), "gaussprRadial" (slow), "bagEarthGCV", "cforest", "earth", "fda", "hdda".
 #'   \item If \code{task = "multi"}, there are 30 methods to choose from:  "AdaBag", "AdaBoost.M1",  "C5.0", "evtree", "glmnet", "hda", "kernelpls", "kknn", "lda", "loclda", "mda", "nb", "nnet", "pda", "pls", "qda", "rda", "rf", "sparseLDA", "stepLDA", "stepQDA", "treebag", "svmLinear", "svmPoly", "svmRadial", "bagEarthGCV", "cforest", "earth", "fda", "hdda".
 #' }
-#' @param metric A \code{character} value for which summary metric should be used to select the optimal model: "ROC" (default for "binary") and "Kappa" (default for "multi")
+#' @param metric A \code{character} value for which summary metric should be used to select the optimal model: "ROC" (default for "binary") and "Kappa" (default for "multi"). Other options include "logLoss", "Accuracy", "Mean_Balanced_Accuracy", and "Mean_F1".
 #' @param tune_length If \code{search = "random"} (default), this is an \code{integer} value for the maximum number of hyperparameter combinations to test for each training model in the ensemble; if \code{search = "grid"}, this is an \code{integer} value for the number of levels of each hyperparameter to test for each model.
 #' @param quiet A \code{logical} value for whether progress should be printed: TRUE (default), FALSE.
 #' @return A list containing the following components:\tabular{ll}{
@@ -46,16 +46,16 @@
 #' @export
 #' @examples
 #' ## Import data.
-#' data(ph_ants)
+#' data(ph_crocs)
 #' ## Remove anomalies with autoencoder.
-#' rm_outs <- ph_anomaly(df = ph_ants, ids_col = "Biosample", class_col = "Species",
+#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
 #'                       method = "ae")
 #' ## Preprocess anomaly-free data frame into train, validation, and test sets
 #' ## with PCs as predictors.
 #' pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
-#'                   vali_pct = 0.15, test_pct = 0.15, dim_red = "pca")
+#'                   vali_pct = 0.15, test_pct = 0.15, method = "pca")
 #' ## Echo control object for train function.
-#' ctrl <- ph_ctrl(ph_ants$Species, resample_method = "boot")
+#' ctrl <- ph_ctrl(ph_crocs$Species, resample_method = "boot")
 #' ## Train all models for ensemble.
 #' \dontrun{
 #' train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,

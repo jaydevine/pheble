@@ -46,6 +46,9 @@ ph_outs <- function(x)
 #' @param ids_col A \code{character} value for the name of the ids column.
 #' @param class_col A \code{character} value for the name of the class column.
 #' @param method A \code{character} value for the anomaly detection method: "ae" (default), "iso" (abbv. for extended isolation forest).
+#' @param scale A \code{logical} value for whether to scale the data: FALSE (default). Recommended if \code{method = "ae"} and if user intends to train other models.
+#' @param center Either a \code{logical} value or numeric-alike vector of length equal to the number of columns of data to scale in \code{df}, where ‘numeric-alike’ means that as.numeric(.) will be applied successfully if is.numeric(.) is not true: NULL (default). If \code{scale = TRUE}, this is set to \code{TRUE} and is used to subtract the mean.
+#' @param sd Either a \code{logical} value or a numeric-alike vector of length equal to the number of columns of data to scale in \code{df}: NULL (default). If \code{scale = TRUE}, this is set to \code{TRUE} and is used to divide by the standard deviation.
 #' @param max_mem_size A \code{character} value for the memory of an h2o session: "15g" (default).
 #' @param port A \code{numeric} value for the port number of the H2O server.
 #' @param train_seed A \code{numeric} value to set the control the randomness of creating resamples: 123 (default).
@@ -66,16 +69,19 @@ ph_outs <- function(x)
 #' @export
 #' @examples
 #' ## Import data.
-#' data(ph_ants)
+#' data(ph_crocs)
 #' ## Remove anomalies with autoencoder.
-#' rm_outs <- ph_anomaly(df = ph_ants, ids_col = "Biosample", class_col = "Species",
+#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
 #'                       method = "ae")
-#' ## Alternatively, remove anomalies with extended isolation forest.
-#' rm_outs <- ph_anomaly(df = ph_ants, ids_col = "Biosample", class_col = "Species",
+#' ## Alternatively, remove anomalies with extended isolation forest. Notice that
+#' ## port is defined, because running H2O sessions one after another can return
+#' ## connection errors.
+#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
 #'                       method = "iso", port = 50001)
-ph_anomaly <- function(df, ids_col, class_col, method = "ae", max_mem_size = "15g",
-                       port = 54321, train_seed = 123, hyper_params = "default",
-                       search = "random", tune_length = 100)
+ph_anomaly <- function(df, ids_col, class_col, method = "ae", scale = FALSE,
+                       center = NULL, sd = NULL, max_mem_size = "15g", port = 54321,
+                       train_seed = 123, hyper_params = list(), search = "random",
+                       tune_length = 100)
 {
     df <- as.data.frame(df)
     if (!is.character(ids_col)) { ids_col <- as.character(ids_col) }
@@ -105,7 +111,33 @@ ph_anomaly <- function(df, ids_col, class_col, method = "ae", max_mem_size = "15
         stop("Seed must be numeric (an integer).")
     if (!is.numeric(tune_length))
         stop("Tune length must be numeric (an integer).")
-    # Redefine search strategy names; making them consistent with train.
+    if (scale == FALSE) {
+        if (!is.null(center) | !is.null(sd))
+            stop("Scale must be set to TRUE.")
+    } else {
+        if (!is.null(center)) {
+            center <- center
+        } else {
+            center <- TRUE
+        }
+        if (!is.null(sd)) {
+            sd <- sd
+        } else {
+            sd <- TRUE
+        }
+        meta_df <- df[, (names(df) %in% c(ids_col, class_col))]
+        scale_df <- df[, !(names(df) %in% c(ids_col, class_col))]
+        scale_df <- as.data.frame(scale(scale_df, center = center, scale = sd))
+        df <- cbind.data.frame(meta_df, scale_df)
+    }
+    closeAllConnections()
+    gc()
+    sink(tmp)
+    requireNamespace("h2o", quietly = TRUE)
+    h2o::h2o.init(max_mem_size = max_mem_size, port = port)
+    h2o::h2o.removeAll()
+    df_h2o <- h2o::as.h2o(df)
+    predictors <- setdiff(colnames(df_h2o), c(ids_col, class_col))
     if (search == "random") {
         search = "RandomDiscrete"
     } else {
@@ -118,17 +150,10 @@ ph_anomaly <- function(df, ids_col, class_col, method = "ae", max_mem_size = "15
         search_criteria <- list(strategy = search, stopping_metric = "AUTO",
                                 stopping_tolerance = 0.00001)
     }
-    closeAllConnections()
-    gc()
-    sink(tmp)
-    requireNamespace("h2o", quietly = TRUE)
-    h2o::h2o.init(max_mem_size = max_mem_size, port = port)
-    h2o::h2o.removeAll()
-    df_h2o <- h2o::as.h2o(df)
-    predictors <- setdiff(colnames(df_h2o), c(ids_col, class_col))
     # Train autoencoder.
     if (method == "ae") {
-        if (hyper_params == "default") {
+        # Redefine search strategy names; making them consistent with train.
+        if (length(hyper_params) == 0) {
             hyper_params <- list(missing_values_handling = "Skip", activation = "Rectifier",
                                  hidden = list(5, 25, 50, 100, 250, 500, nrow(df_h2o)),
                                  input_dropout_ratio = c(0, 0.1, 0.2, 0.3),
@@ -152,7 +177,7 @@ ph_anomaly <- function(df, ids_col, class_col, method = "ae", max_mem_size = "15
         anom_score <- as.data.frame(h2o::h2o.anomaly(model, df_h2o))
         outs <- ph_outs(anom_score$Reconstruction.MSE)
     } else {
-        if (hyper_params == "default") {
+        if (length(hyper_params) == 0) {
             hyper_params <- list(ntrees = c(50, 100, 150, 200),
                                  sample_size = c(64, 128, 256, 512))
         } else {

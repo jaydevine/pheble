@@ -9,6 +9,9 @@ ph_anomaly(
   ids_col,
   class_col,
   method = "ae",
+  scale = FALSE,
+  center = NULL,
+  sd = NULL,
   max_mem_size = "15g",
   port = 54321,
   train_seed = 123,
@@ -25,6 +28,12 @@ ph_anomaly(
 \item{class_col}{A \code{character} value for the name of the class column.}
 
 \item{method}{A \code{character} value for the anomaly detection method: "ae" (default), "iso" (abbv. for extended isolation forest).}
+
+\item{scale}{A \code{logical} value for whether to scale the data: FALSE (default). Recommended if \code{method = "ae"} and if user intends to train other models.}
+
+\item{center}{Either a \code{logical} value or numeric-alike vector of length equal to the number of columns of data to scale in \code{df}, where ‘numeric-alike’ means that as.numeric(.) will be applied successfully if is.numeric(.) is not true: NULL (default). If \code{scale = TRUE}, this is set to \code{TRUE} and is used to subtract the mean.}
+
+\item{sd}{Either a \code{logical} value or a numeric-alike vector of length equal to the number of columns of data to scale in \code{df}: NULL (default). If \code{scale = TRUE}, this is set to \code{TRUE} and is used to divide by the standard deviation.}
 
 \item{max_mem_size}{A \code{character} value for the memory of an h2o session: "15g" (default).}
 
@@ -64,7 +73,9 @@ data(ph_ants)
 ## Remove anomalies with autoencoder.
 rm_outs <- ph_anomaly(df = ph_ants, ids_col = "Biosample", class_col = "Species",
                       method = "ae")
-## Alternatively, remove anomalies with extended isolation forest.
+## Alternatively, remove anomalies with extended isolation forest. Notice that
+## port is defined, because running H2O sessions one after another can return
+## connection errors.
 rm_outs <- ph_anomaly(df = ph_ants, ids_col = "Biosample", class_col = "Species",
                       method = "iso", port = 50001)
 }

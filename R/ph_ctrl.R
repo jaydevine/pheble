@@ -13,9 +13,9 @@
 #' @export
 #' @examples
 #' ## Import data.
-#' data(ph_ants)
+#' data(ph_crocs)
 #' ## Echo control object for train function.
-#' ctrl <- ph_ctrl(ph_ants$Species, resample_method = "boot")
+#' ctrl <- ph_ctrl(ph_crocs$Species, resample_method = "boot")
 ph_ctrl <- function(class, resample_method = "boot", number = ifelse(grepl("cv", resample_method, ignore.case = TRUE), 10, 25),
                     repeats = ifelse(grepl("dcv$", resample_method, ignore.case = TRUE), 3, NA), search = "random",
                     sampling = NULL)

@@ -10,15 +10,18 @@ ph_prep(
   class_col,
   vali_pct = 0.15,
   test_pct = 0.15,
+  scale = FALSE,
+  center = NULL,
+  sd = NULL,
   split_seed = 123,
-  dim_red = "pca",
-  pca_pct = ifelse(dim_red == "pca", 0.95, NULL),
-  max_mem_size = ifelse(dim_red == "ae", "15g", NULL),
-  port = ifelse(dim_red == "ae", 54321, NULL),
-  train_seed = ifelse(dim_red == "ae", 123, NULL),
-  hyper_params = ifelse(dim_red == "ae", "default", NULL),
-  search = ifelse(dim_red == "ae", "random", NULL),
-  tune_length = ifelse(dim_red == "ae", 100, NULL)
+  method = "pca",
+  pca_pct = ifelse(method == "pca", 0.95, NULL),
+  max_mem_size = ifelse(method == "ae", "15g", NULL),
+  port = ifelse(method == "ae", 54321, NULL),
+  train_seed = ifelse(method == "ae", 123, NULL),
+  hyper_params = ifelse(method == "ae", "default", NULL),
+  search = ifelse(method == "ae", "random", NULL),
+  tune_length = ifelse(method == "ae", 100, NULL)
 )
 }
 \arguments{
@@ -32,13 +35,19 @@ ph_prep(
 
 \item{test_pct}{A \code{numeric} value for the percentage of total data to use as test data: 0.15 (default).}
 
+\item{scale}{A \code{logical} value for whether to scale the data: FALSE (default). Recommended if \code{method = "ae"} and if user intends to train other models.}
+
+\item{center}{Either a \code{logical} value or numeric-alike vector of length equal to the number of columns of data to scale in \code{df}, where ‘numeric-alike’ means that as.numeric(.) will be applied successfully if is.numeric(.) is not true: NULL (default). If \code{scale = TRUE}, this is set to \code{TRUE} and is used to subtract the mean.}
+
+\item{sd}{Either a \code{logical} value or a numeric-alike vector of length equal to the number of columns of data to scale in \code{df}: NULL (default). If \code{scale = TRUE}, this is set to \code{TRUE} and is used to divide by the standard deviation.}
+
 \item{split_seed}{A \code{numeric} value to set the seed and control the randomness of splitting the data: 123 (default).}
 
-\item{dim_red}{A \code{character} value for the dimensionality reduction method: "pca" (default), "ae", "none".}
+\item{method}{A \code{character} value for the dimensionality reduction method: "pca" (default), "ae", "none".}
 
-\item{pca_pct}{If \code{dim_red = "pca"}, a \code{numeric} value for the proportion of variance to subset the PCA with: 0.95 (default).}
+\item{pca_pct}{If \code{method = "pca"}, a \code{numeric} value for the proportion of variance to subset the PCA with: 0.95 (default).}
 
-\item{max_mem_size}{If \code{dim_red = "ae"}, a \code{character} value for the memory of an h2o session: "15g" (default).}
+\item{max_mem_size}{If \code{method = "ae"}, a \code{character} value for the memory of an h2o session: "15g" (default).}
 
 \item{port}{A \code{numeric} value for the port number of the H2O server.}
 
@@ -46,9 +55,9 @@ ph_prep(
 
 \item{hyper_params}{A \code{list} of hyperparameters to perform a grid search. the "default" list is: list(missing_values_handling = "Skip", activation = c("Rectifier", "Tanh"), hidden = list(5, 25, 50, 100, 250, 500, nrow(df_h2o)), input_dropout_ratio = c(0, 0.1, 0.2, 0.3), rate = c(0, 0.01, 0.005, 0.001)).}
 
-\item{search}{If \code{dim_red = "ae"}, a \code{character} value for the hyperparameter search strategy: "random" (default), "grid".}
+\item{search}{If \code{method = "ae"}, a \code{character} value for the hyperparameter search strategy: "random" (default), "grid".}
 
-\item{tune_length}{If \code{dim_red = "ae"}, a \code{numeric} value (integer) for either the maximum number of hyperparameter combinations ("random") or individual hyperparameter depth ("grid").}
+\item{tune_length}{If \code{method = "ae"}, a \code{numeric} value (integer) for either the maximum number of hyperparameter combinations ("random") or individual hyperparameter depth ("grid").}
 }
 \value{
 A list containing the following components:\tabular{ll}{
@@ -68,7 +77,7 @@ A list containing the following components:\tabular{ll}{
 \tab \cr
 \code{test_pct} \tab The percentage of total data used as test data. \cr
 \tab \cr
-\code{dim_red} \tab The dimensionality reduction method. \cr
+\code{method} \tab The dimensionality reduction method. \cr
 }
 }
 \description{
@@ -77,7 +86,7 @@ every class is represented in each dataset. By default, it performs a Principal 
 set data and projects the validation and test data into that space. If a non-linear dimensionality reduction
 strategy is preferred instead, an autoencoder can be used to extract deep features. Note that the parameters
 \code{max_mem_size}, \code{activation}, \code{hidden}, \code{dropout_ratio}, \code{rate}, \code{search}, and
-\code{tune_length} are \code{NULL} unless an autoencoder, \code{dim_red = "ae"}, is used. In this case,
+\code{tune_length} are \code{NULL} unless an autoencoder, \code{method = "ae"}, is used. In this case,
 lists or vectors can be supplied to these parameters (see parameter details) to perform a grid search for the
 optimal hyperparameter combination. The autoencoder with the lowest reconstruction error is selected as
 the best model.
@@ -91,9 +100,10 @@ rm_outs <- ph_anomaly(df = ph_ants, ids_col = "Biosample", class_col = "Species"
 ## Preprocess anomaly-free data frame into train, validation, and test sets with
 ## PCs as predictors.
 pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
-                  vali_pct = 0.15, test_pct = 0.15, dim_red = "pca")
+                  vali_pct = 0.15, test_pct = 0.15, method = "pca")
 ## Alternatively, preprocess data frame into train, validation, and test sets with
-## deep features as predictors.
+## latent variables as predictors. Notice that port is defined, because running
+## H2O sessions one after another can return connection errors.
 ae_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
-                  vali_pct = 0.15, test_pct = 0.15, dim_red = "ae", port = 50001)
+                  vali_pct = 0.15, test_pct = 0.15, method = "ae", port = 50001)
 }

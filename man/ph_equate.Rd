@@ -2,17 +2,17 @@
 % Please edit documentation in R/ph_equate.R
 \name{ph_equate}
 \alias{ph_equate}
-\title{Equate factors levels across columns.}
+\title{Equate factors levels.}
 \usage{
-ph_equate(df, class_col)
+ph_equate(df, class)
 }
 \arguments{
-\item{df}{A \code{data.frame} of column-wise class predictions from each ensemble model.}
+\item{df}{A \code{data.frame} of column-wise class predictions.}
 
-\item{class_col}{A \code{character} value for the column name of the actual classes.}
+\item{class}{A \code{factor} value for the observed or classes.}
 }
 \value{
-A \code{data.frame} of column-wise class predictions with equivalent class levels.
+A data frame of column-wise class predictions with class levels equal to the observed class.
 }
 \description{
 The \code{ph_equate} function ensures that the factor levels in all columns are equal. When classification are heavily biased or inaccurate, they can return new class predictions that do not contain every level in the original data. This can interfere with model evaluation functions e.g. via a confusion matrix.
@@ -20,10 +20,10 @@ The \code{ph_equate} function ensures that the factor levels in all columns are 
 \examples{
 ## Make data frame of predicted classes with different levels. One column
 ## should contain the observed classes with every possible level.
-obs <- c("A", "C", "B", "D", "E")
+obs <- as.factor(c("A", "C", "B", "D", "E"))
 method_a <- c("A", "B", "B", "C", "D")
 method_b <- c("A", "C", "B", "D", "C")
 method_c <- c("A", "C", "B", "B", "C")
-df <- data.frame(obs, method_a, method_b, method_c)
-df <- ph_equate(df = df, class_col = "obs")
+df <- data.frame(method_a, method_b, method_c)
+df <- ph_equate(df = df, class = obs)
 }
