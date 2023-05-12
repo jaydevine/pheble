@@ -161,9 +161,12 @@ ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
     names(all_test_preds) <- names(train_models)
     all_test_preds <- as.data.frame(dplyr::bind_cols(all_test_preds))
     # Find models that failed to predict.
-    fail_models <- which(sapply(all_test_preds, anyNA))
-    train_models <- train_models[-c(fail_models)]
-    all_test_preds <- ph_equate(df = all_test_preds[, -c(fail_models)], class = test_df$class)
+    fail_models <- unname(which(sapply(all_test_preds, anyNA)))
+    if (length(fail_models) > 0) {
+        train_models <- train_models[-c(fail_models)]
+        all_test_preds <- all_test_preds[, -c(fail_models)]
+    }
+    all_test_preds <- ph_equate(df = all_test_preds, class = test_df$class)
     all_test_cm <- list()
     if (quiet != TRUE) { message("Generating test predictions for all models.") }
     for (i in 1:ncol(all_test_preds)) {

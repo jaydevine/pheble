@@ -22,7 +22,6 @@ ph_equate <- function(df, class)
         stop("Class must be a factor).")
     for (i in 1:ncol(df)) {
         df[, i] <- factor(df[, i], levels = unique(class), ordered = FALSE)
-        i <- i + 1
     }
     return(df)
 }

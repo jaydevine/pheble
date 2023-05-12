@@ -97,9 +97,10 @@ train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
                          task = "multi", methods = "all", tune_length = 5,
                          quiet = FALSE)
 }
-## You can also train just a few (e.g., nnet, qda, rda), although more is preferable.
+## You can also train just a few, although more is preferable.
 train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
                          test_df = pc_dfs$test_df, class_col = "Species",
-                         ctrl = ctrl, task = "multi", methods = c("nnet", "qda", "rda"),
+                         ctrl = ctrl, task = "multi", methods = c("lda", "mda", "nnet",
+                         "pda", "sparseLDA"),
                          tune_length = 5, quiet = FALSE)
 }
