@@ -1,14 +1,17 @@
 Package: pheble
-Title: Classifying high-dimensional phenotypes with ensemble learning
+Title: Classifying High-Dimensional Phenotypes with Ensemble Learning
 Version: 0.0.0.9000
-Authors@R: 
-    person("Jay", "Devine", , "jay.devine1@ucalgary.ca", role = c("aut", "cre", "cph"),
-           comment = c(ORCID = "0000-0003-0600-1058"))
-Description: A system for binary and multi-class classification of high-dimensional phenotypic data
-             using ensemble learning. By combining predictions from different classification models,
-             this package attempts to improve performance over traditional models. The preprocessing, 
-             training, validation, and testing are performed end-to-end, thus minimizing user input and 
-             simplifying the process of classification. 
+Authors@R: c(person("Jay", "Devine", role = c("aut", "cre", "cph"),
+    email = "jay.devine1@ucalgary.ca"),
+    person("Bened\'ikt", Hallgrimsson", role = c("aut"),
+    email = "bhallgri@ucalgary.ca"))
+Description: A system for binary and multi-class classification of 
+    high-dimensional phenotypic data using ensemble learning. By 
+    combining predictions from different classification models,
+    this package attempts to improve performance over traditional 
+    models. The preprocessing, training, validation, and testing 
+    are performed end-to-end, thus minimizing user input and 
+    simplifying the process of classification. 
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
