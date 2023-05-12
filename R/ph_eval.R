@@ -12,7 +12,8 @@
 #' ## Remove anomalies with autoencoder.
 #' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
 #'                       method = "ae")
-#' ## Preprocess anomaly-free data frame into train, validation, and test sets with PCs as predictors.
+#' ## Preprocess anomaly-free data frame into train, validation, and test sets
+#' ## with PCs as predictors.
 #' pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
 #'                   vali_pct = 0.15, test_pct = 0.15, method = "pca")
 #' ## Echo control object for train function.
@@ -20,11 +21,10 @@
 #' ## Train a few models for ensemble, although more is generally preferable.
 #' train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
 #'                          test_df = pc_dfs$test_df, class_col = "Species",
-#'                          ctrl = ctrl, resample_method = "boot", task = "multi",
-#'                          methods = c("nnet", qda", "rda"), tune_length = 5,
-#'                          quiet = FALSE)
+#'                          ctrl = ctrl, task = "multi", methods = c("nnet", "qda", "rda"),
+#'                          tune_length = 5, quiet = FALSE)
 #' ## Evaluate e.g. the first model.
-#' test_pred <- stats::predict(train_models$train_models[[1]], pc_dfs$test_df)
+#' test_pred <- predict(train_models$train_models[[1]], pc_dfs$test_df)
 #' test_obs <- as.factor(pc_dfs$test_df$Species)
 #' test_cm <- ph_eval(pred = test_pred, obs = test_obs)
 ph_eval <- function(pred, obs)
@@ -32,7 +32,7 @@ ph_eval <- function(pred, obs)
     if (!is.factor(obs)) { obs <- as.factor(obs) }
     task <- ifelse(length(levels(obs)) > 2, "multi", "binary")
     if (task == "multi") {
-        # Confusion matrix; take the mean for a given class if the model returns NA.
+        # Confusion matrix. Take the mean for a given class if the model returns NA.
         cm <- caret::confusionMatrix(pred, obs)
         for (i in 1:ncol(cm$byClass)) {
             cm$byClass[is.na(cm$byClass[,i]), i] <- mean(cm$byClass[,i], na.rm = TRUE)

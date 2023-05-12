@@ -61,20 +61,24 @@
 #' ## Remove anomalies with autoencoder.
 #' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
 #'                       method = "ae")
-#' ## Preprocess anomaly-free data frame into train, validation, and test sets with PCs as predictors.
-#' pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species", vali_pct = 0.15,
-#'                   test_pct = 0.15, method = "pca")
+#' ## Preprocess anomaly-free data frame into train, validation, and test sets
+#' ## with PCs as predictors.
+#' pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
+#'                   vali_pct = 0.15, test_pct = 0.15, method = "pca")
 #' ## Echo control object for train function.
 #' ctrl <- ph_ctrl(ph_crocs$Species, resample_method = "boot")
 #' ## Train all models for ensemble.
+#' \dontrun{
 #' train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
 #'                          test_df = pc_dfs$test_df, class_col = "Species",
 #'                          ctrl = ctrl, task = "multi", methods = "all",
 #'                          tune_length = 5, quiet = FALSE)
-#' ## You can also train just a few (e.g., nnet, qda, rda), although more is preferable.
+#' }
+#' ## You can also train just a few, although more is preferable.
 #' train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
-#'                          test_df = pc_dfs$test_df, class_col = "Species", ctrl = ctrl,
-#'                          task = "multi", methods = c("nnet", qda", "rda"),
+#'                          test_df = pc_dfs$test_df, class_col = "Species",
+#'                          ctrl = ctrl, task = "multi", methods = c("lda", "mda", "nnet",
+#'                          "pda", "sparseLDA"),
 #'                          tune_length = 5, quiet = FALSE)
 #' ## Train the ensemble.
 #' ensemble_model <- ph_ensemble(train_models = train_models$train_models,
@@ -82,9 +86,6 @@
 #'                               test_df = pc_dfs$test_df, class_col = "Species", ctrl = ctrl,
 #'                               task = "multi", top_models = 3, metalearner = "glmnet",
 #'                               tune_length = 25, quiet = FALSE)
-#' ## Examine the test set results from every method, as well as the ensemble variable importances.
-#' View(ensemble_model$all_test_results)
-#' View(ensemble_model$var_imps)
 ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
                         ctrl, train_seed = 123, n_cores = 2, task = "multi",
                         metric = ifelse(task == "multi", "Kappa", "ROC"), top_models = 3,
@@ -141,9 +142,13 @@ ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
     vali_check <- which(vali_levels$Freq < 2)
     test_check <- which(test_levels$Freq < 2)
     if (length(vali_check) > 0)
-        stop(cat(paste0(vali_levels$Var1[vali_check], " needs at least two observations in the validation set.", "\n"), sep = ""))
+        stop(cat(paste0(vali_levels$Var1[vali_check],
+                        " needs at least two observations in the validation set.", "\n"),
+                 sep = ""))
     if (length(test_check) > 0)
-        stop(cat(paste0(test_levels$Var1[test_check], " needs at least two observations in the test set.", "\n"), sep = ""))
+        stop(cat(paste0(test_levels$Var1[test_check],
+                        " needs at least two observations in the test set.", "\n"),
+                 sep = ""))
     if (!is.list(ctrl))
         stop("Control object must be a list.")
     # Evaluate every initial model.
