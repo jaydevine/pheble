@@ -3,7 +3,7 @@ Title: Classifying High-Dimensional Phenotypes with Ensemble Learning
 Version: 0.0.0.9000
 Authors@R: c(person("Jay", "Devine", role = c("aut", "cre", "cph"),
     email = "jay.devine1@ucalgary.ca"),
-    person("Bened\'ikt", Hallgrimsson", role = c("aut"),
+    person("Bened\'ikt", "Hallgrimsson", role = c("aut"),
     email = "bhallgri@ucalgary.ca"))
 Description: A system for binary and multi-class classification of 
     high-dimensional phenotypic data using ensemble learning. By 
