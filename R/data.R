@@ -21,7 +21,9 @@
 #'   \item{Species}{Species}
 #'   ...
 #' }
-#' @source <http://dx.doi.org/10.5061/dryad.14fn1>
+#' @source
+#' Downloaded from
+#' <\doi{dx.doi.org/10.5061/dryad.14fn1}>
 "ph_crocs"
 
 #' Data from: Sexually mediated phenotypic variation within and between sexes as a continuum structured by ecology: The mosaic nature of skeletal variation across body regions in Threespine stickleback (Gasterosteus aculeatus L.)
@@ -51,5 +53,7 @@
 #'   \item{Sex}{Sex}
 #'   ...
 #' }
-#' @source <https://doi.org/10.5061/dryad.xd2547dkw>
+#' @source
+#' Downloaded from
+#' <\doi{doi.org/10.5061/dryad.xd2547dkw}>
 "ph_stickleback"
