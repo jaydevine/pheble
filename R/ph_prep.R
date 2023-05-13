@@ -193,7 +193,7 @@ ph_prep <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15,
         } else {
           tmp <- "NUL"
         }
-        closeAllConnections()
+        # closeAllConnections()
         gc()
         sink(tmp)
         requireNamespace("h2o", quietly = TRUE)
@@ -263,7 +263,7 @@ ph_prep <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15,
         # Shutdown h2o cluster.
         h2o::h2o.shutdown(prompt = FALSE)
         sink()
-        closeAllConnections()
+        # closeAllConnections()
     } else {
         train_x <- train_df[,-1]
         vali_x <- vali_df[,-1]

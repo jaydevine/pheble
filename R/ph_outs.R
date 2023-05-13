@@ -133,7 +133,7 @@ ph_anomaly <- function(df, ids_col, class_col, method = "ae", scale = FALSE,
         scale_df <- as.data.frame(scale(scale_df, center = center, scale = sd))
         df <- cbind.data.frame(meta_df, scale_df)
     }
-    closeAllConnections()
+    # closeAllConnections()
     gc()
     sink(tmp)
     requireNamespace("h2o", quietly = TRUE)
@@ -223,6 +223,6 @@ ph_anomaly <- function(df, ids_col, class_col, method = "ae", scale = FALSE,
     # Shutdown h2o cluster.
     h2o::h2o.shutdown(prompt = FALSE)
     sink()
-    closeAllConnections()
+    # closeAllConnections()
     list(df = df, model = model, anom_score = anom_score)
 }
