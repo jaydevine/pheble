@@ -1,6 +1,6 @@
 Package: pheble
 Title: Classifying High-Dimensional Phenotypes with Ensemble Learning
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: c(person("Jay", "Devine", role = c("aut", "cre", "cph"),
     email = "jay.devine1@ucalgary.ca"),
     person("Bened\'ikt", "Hallgrimsson", role = c("aut"),
