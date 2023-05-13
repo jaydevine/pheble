@@ -9,7 +9,7 @@ Description: A system for binary and multi-class classification of
     high-dimensional phenotypic data using ensemble learning. By 
     combining predictions from different classification models,
     this package attempts to improve performance over traditional 
-    models. The preprocessing, training, validation, and testing 
+    models. The pre-processing, training, validation, and testing 
     are performed end-to-end, thus minimizing user input and 
     simplifying the process of classification. 
 License: GPL (>= 3)
