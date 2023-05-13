@@ -9,3 +9,4 @@
 ^\.github$
 ^R/testing
 ^revdep$
+^CRAN-SUBMISSION$
