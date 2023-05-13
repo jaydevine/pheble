@@ -51,15 +51,17 @@
 #' ## Import data.
 #' data(ph_crocs)
 #' ## Remove anomalies with autoencoder.
-#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
-#'                       method = "ae")
-#' ## Preprocess anomaly-free data frame into train, validation, and test sets with
-#' ## PCs as predictors.
-#' pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
-#'                   vali_pct = 0.15, test_pct = 0.15, method = "pca")
-#' ## Alternatively, preprocess data frame into train, validation, and test sets with
-#' ## latent variables as predictors. Notice that port is defined, because running
-#' ## H2O sessions one after another can return connection errors.
+#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
+#'                       class_col = "Species", method = "ae")
+#' ## Preprocess anomaly-free data frame into train, validation, and test sets
+#' ## with PCs as predictors.
+#' pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample",
+#'                   class_col = "Species", vali_pct = 0.15,
+#'                   test_pct = 0.15, method = "pca")
+#' ## Alternatively, preprocess data frame into train, validation, and test
+#' ## sets with latent variables as predictors. Notice that port is defined,
+#' ## because running H2O sessions one after another can cause connection
+#' ## errors.
 #' ae_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
 #'                   vali_pct = 0.15, test_pct = 0.15, method = "ae", port = 50001)
 ph_prep <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15,
@@ -77,18 +79,22 @@ ph_prep <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15,
     if (!is.character(ids_col)) { ids_col <- as.character(ids_col) }
     if (!is.character(class_col)) { class_col <- as.character(class_col) }
     if (!(ids_col %in% colnames(df)))
-        stop("The ids column is either not in the data frame or it is differently named.")
+        stop(paste("The ids column is either not in the data frame or is",
+                   "differently named."))
     if (!(class_col %in% colnames(df)))
-        stop("The class column is either not in the data frame or it is differently named.")
+        stop(paste("The class column is either not in the data frame or is",
+                   "differently named."))
     # Convert ids and class column names.
     colnames(df)[which(colnames(df) == ids_col)] <- "ids"
     colnames(df)[which(colnames(df) == class_col)] <- "class"
     if (any(duplicated(df$ids)) != FALSE)
         stop("This data frame contains duplicate ids. Ensure they are unique.")
     if (data.table::between(test_pct, 0, 1) != TRUE)
-        stop("The percentage of data for testing must be expressed as a decimal between 0 and 1.")
+        stop(paste("The percentage of data for testing must be expressed as a",
+                   "decimal between 0 and 1."))
     if (data.table::between(vali_pct, 0, 1) != TRUE)
-        stop("The percentage of data for validation must be expressed as a decimal between 0 and 1.")
+        stop(paste("The percentage of data for validation must be expressed",
+                   "as a decimal between 0 and 1."))
     if (scale == FALSE) {
         if (!is.null(center) | !is.null(sd))
             stop("Scale must be set to TRUE.")
@@ -114,18 +120,24 @@ ph_prep <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15,
         stop("Dimensionality reduction method does not exist.")
     # Split entire data frame with testing indices.
     set.seed(split_seed)
-    test_split <- c(caret::createDataPartition(as.factor(df$class), times = 1, p = test_pct, list = F))
+    test_split <- c(caret::createDataPartition(as.factor(df$class),
+                                               times = 1,
+                                               p = test_pct,
+                                               list = F))
     test_df <- df[test_split, ]
     train_df <- df[-test_split, ]
     # Split training set with validation indices.
-    vali_samp <- caret::createDataPartition(as.factor(train_df$class), p = vali_pct, list = F)
+    vali_samp <- caret::createDataPartition(as.factor(train_df$class),
+                                            p = vali_pct,
+                                            list = F)
     vali_df <- train_df[vali_samp, ]
     train_seq <- seq(1, length(train_df$class), 1)
     train_samp <- setdiff(train_seq, vali_samp)
     train_split <- stats::na.omit(match(train_df$ids[train_samp], df$ids))
     vali_split <- stats::na.omit(match(train_df$ids[vali_samp], df$ids))
     # Make class column first column.
-    df <- df[, c(which(colnames(df) == "class"), which(colnames(df) != "class"))]
+    df <- df[, c(which(colnames(df) == "class"),
+                 which(colnames(df) != "class"))]
     rownames(df) <- df$ids
     # Get rid of ids column.
     df <- df[, -which(colnames(df) %in% "ids")]
@@ -137,7 +149,8 @@ ph_prep <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15,
     if (method == "pca") {
         pca_pct <- pca_pct
         if (data.table::between(pca_pct, 0, 1) != TRUE)
-            stop("The proportion of variance to subset the PCA with must be expressed as a decimal between 0 and 1.")
+            stop(paste("The proportion of variance to subset the PCA with",
+                       "must be expressed as a decimal between 0 and 1."))
         pca_obj <- stats::prcomp(train_df[,-1])
         mu <- colMeans(train_df[,-1])
         pov <- pca_obj$sdev^2/sum(pca_obj$sdev^2)
@@ -153,11 +166,15 @@ ph_prep <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15,
         }
         pc_vec <- sort(pc_vec)
         scores <- pca_obj$x[, c(pc_vec)]
-        output <- list(scores = scores, pc_vec = pc_vec, pca_obj = pca_obj, mu = mu)
+        output <- list(scores = scores, pc_vec = pc_vec,
+                       pca_obj = pca_obj, mu = mu)
         # Project data.
-        train_pca <- scale(train_df[,-1], output$pca_obj$center, output$pca_obj$scale) %*% output$pca_obj$rotation
-        vali_pca <- scale(vali_df[,-1], output$pca_obj$center, output$pca_obj$scale) %*% output$pca_obj$rotation
-        test_pca <- scale(test_df[,-1], output$pca_obj$center, output$pca_obj$scale) %*% output$pca_obj$rotation
+        train_pca <- scale(train_df[,-1], output$pca_obj$center,
+                           output$pca_obj$scale) %*% output$pca_obj$rotation
+        vali_pca <- scale(vali_df[,-1], output$pca_obj$center,
+                          output$pca_obj$scale) %*% output$pca_obj$rotation
+        test_pca <- scale(test_df[,-1], output$pca_obj$center,
+                          output$pca_obj$scale) %*% output$pca_obj$rotation
         # Subset data by pc vector.
         train_x <- train_pca[, c(output$pc_vec)]
         vali_x <- vali_pca[, c(output$pc_vec)]
@@ -193,15 +210,20 @@ ph_prep <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15,
             search = "Cartesian"
         }
         if (search == "RandomDiscrete") {
-            search_criteria <- list(strategy = search, max_models = tune_length,
-                                    stopping_metric = "AUTO", stopping_tolerance = 0.00001)
+            search_criteria <- list(strategy = search,
+                                    max_models = tune_length,
+                                    stopping_metric = "AUTO",
+                                    stopping_tolerance = 0.00001)
         } else {
-            search_criteria <- list(strategy = search, stopping_metric = "AUTO",
+            search_criteria <- list(strategy = search,
+                                    stopping_metric = "AUTO",
                                     stopping_tolerance = 0.00001)
         }
         if (length(hyper_params) == 0) {
-            hyper_params <- list(missing_values_handling = "Skip", activation = "Rectifier",
-                                 hidden = list(5, 25, 50, 100, 250, 500, nrow(train_h2o)),
+            hyper_params <- list(missing_values_handling = "Skip",
+                                 activation = "Rectifier",
+                                 hidden = list(5, 25, 50, 100, 250, 500,
+                                               nrow(train_h2o)),
                                  input_dropout_ratio = c(0, 0.1, 0.2, 0.3),
                                  rate = c(0, 0.01, 0.005, 0.001))
         } else {
@@ -211,19 +233,33 @@ ph_prep <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15,
             stop("Hyperparameters must be supplied as a list.")
         # Train autoencoder.
         ae_grid <- suppressWarnings(
-                       h2o::h2o.grid(algorithm = 'deeplearning', x = predictors, training_frame = train_h2o,
-                           grid_id = 'ae_grid', autoencoder = TRUE, hyper_params = hyper_params,
-                           search_criteria = search_criteria, sparse = FALSE, ignore_const_cols = FALSE,
-                           seed = train_seed)
+                       h2o::h2o.grid(algorithm = 'deeplearning',
+                                     x = predictors,
+                                     training_frame = train_h2o,
+                                     grid_id = 'ae_grid',
+                                     autoencoder = TRUE,
+                                     hyper_params = hyper_params,
+                                     search_criteria = search_criteria,
+                                     sparse = FALSE,
+                                     ignore_const_cols = FALSE,
+                                     seed = train_seed)
                    )
         ae_grids <- suppressWarnings(
-                        h2o::h2o.getGrid(grid_id = "ae_grid", sort_by = "mse", decreasing = FALSE)
+                        h2o::h2o.getGrid(grid_id = "ae_grid",
+                                         sort_by = "mse",
+                                         decreasing = FALSE)
                     )
         best_ae <- h2o::h2o.getModel(ae_grids@model_ids[[1]])
         # Extract deep features.
-        train_x <- as.data.frame(h2o::h2o.deepfeatures(best_ae, train_h2o, layer=1))
-        vali_x <- as.data.frame(h2o::h2o.deepfeatures(best_ae, vali_h2o, layer=1))
-        test_x <- as.data.frame(h2o::h2o.deepfeatures(best_ae, test_h2o, layer=1))
+        train_x <- as.data.frame(h2o::h2o.deepfeatures(best_ae,
+                                                       train_h2o,
+                                                       layer=1))
+        vali_x <- as.data.frame(h2o::h2o.deepfeatures(best_ae,
+                                                      vali_h2o,
+                                                      layer=1))
+        test_x <- as.data.frame(h2o::h2o.deepfeatures(best_ae,
+                                                      test_h2o,
+                                                      layer=1))
         # Shutdown h2o cluster.
         h2o::h2o.shutdown(prompt = FALSE)
         sink()
@@ -240,7 +276,8 @@ ph_prep <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15,
     colnames(train_df)[1] <- class_col
     colnames(vali_df)[1] <- class_col
     colnames(test_df)[1] <- class_col
-    list(train_df = train_df, vali_df = vali_df, test_df = test_df, train_split = train_split,
-         vali_split = vali_split, test_split = test_split, vali_pct = vali_pct, test_pct = test_pct,
-         method = method)
+    list(train_df = train_df, vali_df = vali_df, test_df = test_df,
+         train_split = train_split, vali_split = vali_split,
+         test_split = test_split, vali_pct = vali_pct,
+         test_pct = test_pct, method = method)
 }

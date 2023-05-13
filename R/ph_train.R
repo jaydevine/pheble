@@ -48,40 +48,56 @@
 #' ## Import data.
 #' data(ph_crocs)
 #' ## Remove anomalies with autoencoder.
-#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
-#'                       method = "ae")
+#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
+#'                       class_col = "Species", method = "ae")
 #' ## Preprocess anomaly-free data frame into train, validation, and test sets
 #' ## with PCs as predictors.
-#' pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
-#'                   vali_pct = 0.15, test_pct = 0.15, method = "pca")
+#' pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample",
+#'                   class_col = "Species", vali_pct = 0.15,
+#'                   test_pct = 0.15, method = "pca")
 #' ## Echo control object for train function.
 #' ctrl <- ph_ctrl(ph_crocs$Species, resample_method = "boot")
 #' ## Train all models for ensemble.
 #' \dontrun{
-#' train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
-#'                          test_df = pc_dfs$test_df, class_col = "Species", ctrl = ctrl,
-#'                          task = "multi", methods = "all", tune_length = 5,
+#' train_models <- ph_train(train_df = pc_dfs$train_df,
+#'                          vali_df = pc_dfs$vali_df,
+#'                          test_df = pc_dfs$test_df,
+#'                          class_col = "Species",
+#'                          ctrl = ctrl,
+#'                          task = "multi",
+#'                          methods = "all",
+#'                          tune_length = 5,
 #'                          quiet = FALSE)
 #' }
 #' ## You can also train just a few, although more is preferable.
-#' train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
-#'                          test_df = pc_dfs$test_df, class_col = "Species",
-#'                          ctrl = ctrl, task = "multi", methods = c("lda", "mda", "nnet",
-#'                          "pda", "sparseLDA"),
-#'                          tune_length = 5, quiet = FALSE)
+#' train_models <- ph_train(train_df = pc_dfs$train_df,
+#'                          vali_df = pc_dfs$vali_df,
+#'                          test_df = pc_dfs$test_df,
+#'                          class_col = "Species",
+#'                          ctrl = ctrl,
+#'                          task = "multi",
+#'                          methods = c("lda", "mda",
+#'                          "nnet", "pda", "sparseLDA"),
+#'                          tune_length = 5,
+#'                          quiet = FALSE)
 ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
-                     train_seed = 123, n_cores = 2, task = "multi", methods = "all",
-                     metric = ifelse(task == "multi", "Kappa", "ROC"),
+                     train_seed = 123, n_cores = 2, task = "multi",
+                     methods = "all", metric = ifelse(task == "multi",
+                                                      "Kappa", "ROC"),
                      tune_length = 10, quiet = FALSE)
 {
     if (!is.character(class_col)) { class_col <- as.character(class_col) }
     if (class_col %in% colnames(train_df) != TRUE |
         class_col %in% colnames(vali_df) != TRUE |
         class_col %in% colnames(test_df) != TRUE)
-        stop("Either the class column name is not in one or more of the data frames or it is inconsistent between data frames.")
-    train_df <- train_df[, c(which(colnames(train_df) == class_col), which(colnames(train_df) != class_col))]
-    vali_df <- vali_df[, c(which(colnames(vali_df) == class_col), which(colnames(vali_df) != class_col))]
-    test_df <- test_df[, c(which(colnames(test_df) == class_col), which(colnames(test_df) != class_col))]
+        stop(paste("Either the class column name is not in one or more of the",
+                   "data frames or it is inconsistent between data frames."))
+    train_df <- train_df[, c(which(colnames(train_df) == class_col),
+                             which(colnames(train_df) != class_col))]
+    vali_df <- vali_df[, c(which(colnames(vali_df) == class_col),
+                           which(colnames(vali_df) != class_col))]
+    test_df <- test_df[, c(which(colnames(test_df) == class_col),
+                           which(colnames(test_df) != class_col))]
     colnames(train_df)[which(colnames(train_df) == class_col)] <- "class"
     colnames(vali_df)[which(colnames(vali_df) == class_col)] <- "class"
     colnames(test_df)[which(colnames(test_df) == class_col)] <- "class"
@@ -92,25 +108,30 @@ ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
     if (ncol(train_df) != ncol(vali_df) |
         ncol(train_df) != ncol(test_df) |
         ncol(vali_df) != ncol(test_df))
-        stop("The number of predictors (columns) are inconsistent between data frames.")
+        stop(paste("The number of predictors (columns) are inconsistent",
+                   "between data frames."))
     if (!is.numeric(train_seed))
         stop("Seed must be numeric (an integer).")
     if (!is.numeric(n_cores))
         stop("Number of cores must be numeric (an integer).")
     if (!(task %in% c("multi", "binary")))
         stop("Classification task does not exist.")
-    if (all(methods %in% c("AdaBag", "AdaBoost.M1", "bagEarthGCV", "C5.0", "cforest", "earth",
-                           "evtree", "fda", "gaussprLinear", "gaussprPoly", "gaussprRadial",
-                           "glmnet", "hda", "hdda", "kernelpls", "kknn", "lda", "loclda", "mda",
-                           "nb", "nnet", "pda", "pls", "qda", "rda", "rf", "sparseLDA",
-                           "stepLDA", "stepQDA", "svmLinear", "svmPoly", "svmRadial",
+    if (all(methods %in% c("AdaBag", "AdaBoost.M1", "bagEarthGCV", "C5.0",
+                           "cforest", "earth", "evtree", "fda",
+                           "gaussprLinear", "gaussprPoly", "gaussprRadial",
+                           "glmnet", "hda", "hdda", "kernelpls", "kknn",
+                           "lda", "loclda", "mda", "nb", "nnet", "pda", "pls",
+                           "qda", "rda", "rf", "sparseLDA", "stepLDA",
+                           "stepQDA", "svmLinear", "svmPoly", "svmRadial",
                            "treebag", "all")) != TRUE)
-        stop("At least one classification method has been entered incorrectly or is not available.")
+        stop(paste("At least one classification method has been entered",
+                   "incorrectly or is not available."))
     if (length(methods) > 1) {
         if ("all" %in% methods != FALSE)
            stop("The method \"all\" cannot be added to other methods.")
     }
-    if (!(metric %in% c("logLoss", "Accuracy", "Mean_Balanced_Accuracy", "Mean_F1", "Kappa", "ROC")))
+    if (!(metric %in% c("logLoss", "Accuracy", "Mean_Balanced_Accuracy",
+                        "Mean_F1", "Kappa", "ROC")))
         stop("Metric does not exist.")
     if (tune_length < 1)
         stop("Tune length must be 1 or higher.")
@@ -133,11 +154,13 @@ ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
     test_check <- which(test_levels$Freq < 2)
     if (length(vali_check) > 0)
         stop(cat(paste0(vali_levels$Var1[vali_check],
-                        " needs at least two observations in the validation set.", "\n"),
+                        " needs at least two observations in the validation",
+                        " set.", "\n"),
                  sep = ""))
     if (length(test_check) > 0)
         stop(cat(paste0(test_levels$Var1[test_check],
-                        " needs at least two observations in the test set.", "\n"),
+                        " needs at least two observations in the test set.",
+                        "\n"),
                  sep = ""))
     if (!is.list(ctrl))
         stop("Control object must be a list.")
@@ -153,18 +176,22 @@ ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
     if (task == "binary") {
         par_methods <- c("AdaBag", "AdaBoost.M1", "C5.0", "evtree", "glmnet",
                          "hda", "kernelpls", "kknn", "lda", "loclda", "mda",
-                         "nb", "nnet", "pda", "pls", "qda", "rda", "rf", "sparseLDA",
-                         "stepLDA", "stepQDA", "treebag")
-        formula_methods <- c("svmLinear", "svmPoly","svmRadial", "gaussprLinear",
-                             "gaussprPoly", "gaussprRadial")
+                         "nb", "nnet", "pda", "pls", "qda", "rda", "rf",
+                         "sparseLDA", "stepLDA", "stepQDA", "treebag")
+        formula_methods <- c("svmLinear", "svmPoly","svmRadial",
+                             "gaussprLinear", "gaussprPoly", "gaussprRadial")
         nopar_methods <- c("bagEarthGCV", "cforest", "earth", "fda", "hdda")
         if ("all" %in% methods) {
             par_methods <- par_methods
             formula_methods <- formula_methods
             nopar_methods <- nopar_methods
         } else {
-            if (all(methods %in% c(par_methods, formula_methods, nopar_methods)) != TRUE)
-                stop("At least one classification method has been entered incorrectly or is not available for binary classification.")
+            if (all(methods %in% c(par_methods,
+                                   formula_methods,
+                                   nopar_methods)) != TRUE)
+                stop(paste("At least one classification method has been",
+                           "entered incorrectly or is not available for",
+                           "binary classification."))
             if (length(methods) < 2)
                 stop("At least two methods are required for the ensemble.")
             par_methods <- intersect(methods, par_methods)
@@ -175,11 +202,16 @@ ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
         if (length(par_methods) > 0) {
             for (i in par_methods) {
                 iter_a <- iter_a + 1
-                if (quiet != TRUE) { message(paste0("Working on ", i, " model.")) }
+                if (quiet != TRUE) { message(paste0("Working on ",
+                                                    i, " model.")) }
                 set.seed(train_seed)
-                train_models[[iter_a]] <- try(caret::train(x = train_x, y = train_df$class, metric = metric,
-                                                           method = i, allowParallel = TRUE,
-                                                           trControl = ctrl, tuneLength = tune_length),
+                train_models[[iter_a]] <- try(caret::train(x = train_x,
+                                                           y = train_df$class,
+                                                           metric = metric,
+                                                           method = i,
+                                                           allowParallel = TRUE,
+                                                           trControl = ctrl,
+                                                           tuneLength = tune_length),
                                               silent = TRUE)
                 if (inherits(train_models[[iter_a]], "try-error")) { next }
                 names(train_models)[iter_a] <- i
@@ -189,10 +221,15 @@ ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
         if (length(formula_methods) > 0) {
             for (i in formula_methods) {
                 iter_b <- iter_b + 1
-                if (quiet != TRUE) { message(paste0("Working on ", i, " model.")) }
+                if (quiet != TRUE) { message(paste0("Working on ",
+                                                    i, " model.")) }
                 set.seed(train_seed)
-                train_models[[iter_b]] <- try(caret::train(class~., data = train_df, metric = metric, method = i,
-                                                           allowParallel = TRUE, trControl = ctrl,
+                train_models[[iter_b]] <- try(caret::train(class~.,
+                                                           data = train_df,
+                                                           metric = metric,
+                                                           method = i,
+                                                           allowParallel = TRUE,
+                                                           trControl = ctrl,
                                                            tuneLength = tune_length),
                                               silent = TRUE)
                 if (inherits(train_models[[iter_b]], "try-error")) { next }
@@ -203,10 +240,15 @@ ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
         if (length(nopar_methods) > 0) {
             for (i in nopar_methods) {
                 iter_c <- iter_c + 1
-                if (quiet != TRUE) { message(paste0("Working on ", i, " model.")) }
+                if (quiet != TRUE) { message(paste0("Working on ",
+                                                    i, " model.")) }
                 set.seed(train_seed)
-                train_models[[iter_c]] <- try(caret::train(x = train_x, y = train_df$class, metric = metric, method = i,
-                                                           trControl = ctrl, tuneLength = tune_length),
+                train_models[[iter_c]] <- try(caret::train(x = train_x,
+                                                           y = train_df$class,
+                                                           metric = metric,
+                                                           method = i,
+                                                           trControl = ctrl,
+                                                           tuneLength = tune_length),
                                               silent = TRUE)
                 if (inherits(train_models[[iter_c]], "try-error")) { next }
                 names(train_models)[iter_c] <- i
@@ -214,10 +256,10 @@ ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
         }
         if (quiet != TRUE) { message("Training complete.") }
     } else {
-        par_methods <- c("AdaBag", "AdaBoost.M1",  "C5.0", "evtree", "glmnet", "hda",
-                         "kernelpls", "kknn", "lda", "loclda", "mda", "nb", "nnet",
-                         "pda", "pls", "qda", "rda", "rf", "sparseLDA","stepLDA","stepQDA",
-                         "treebag")
+        par_methods <- c("AdaBag", "AdaBoost.M1",  "C5.0", "evtree", "glmnet",
+                         "hda", "kernelpls", "kknn", "lda", "loclda", "mda",
+                         "nb", "nnet", "pda", "pls", "qda", "rda", "rf",
+                         "sparseLDA","stepLDA","stepQDA", "treebag")
         formula_methods <- c("svmLinear", "svmPoly", "svmRadial")
         nopar_methods <- c("bagEarthGCV", "cforest", "earth", "fda", "hdda")
         if ("all" %in% methods) {
@@ -225,8 +267,12 @@ ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
             formula_methods <- formula_methods
             nopar_methods <- nopar_methods
         } else {
-            if (all(methods %in% c(par_methods, formula_methods, nopar_methods)) != TRUE)
-                stop("At least one classification method has been entered incorrectly or is not available for multi-class classification.")
+            if (all(methods %in% c(par_methods,
+                                   formula_methods,
+                                   nopar_methods)) != TRUE)
+                stop(paste("At least one classification method has been",
+                           "entered incorrectly or is not available for",
+                           "multi-class classification."))
         if (length(methods) < 2)
             stop("At least two methods are required for the ensemble.")
         par_methods <- intersect(methods, par_methods)
@@ -237,11 +283,16 @@ ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
         if (length(par_methods) > 0) {
             for (i in par_methods) {
                 iter_a <- iter_a + 1
-                if (quiet != TRUE) { message(paste0("Working on ", i, " model.")) }
+                if (quiet != TRUE) { message(paste0("Working on ",
+                                                    i, " model.")) }
                 set.seed(train_seed)
-                train_models[[iter_a]] <- try(caret::train(x = train_x, y = train_df$class, metric = metric,
-                                                           method = i, allowParallel = TRUE,
-                                                           trControl = ctrl, tuneLength = tune_length),
+                train_models[[iter_a]] <- try(caret::train(x = train_x,
+                                                           y = train_df$class,
+                                                           metric = metric,
+                                                           method = i,
+                                                           allowParallel = TRUE,
+                                                           trControl = ctrl,
+                                                           tuneLength = tune_length),
                                               silent = TRUE)
                 if (inherits(train_models[[iter_a]], "try-error")) { next }
                 names(train_models)[iter_a] <- i
@@ -251,10 +302,15 @@ ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
         if (length(formula_methods) > 0) {
             for (i in formula_methods) {
                 iter_b <- iter_b + 1
-                if (quiet != TRUE) { message(paste0("Working on ", i, " model.")) }
+                if (quiet != TRUE) { message(paste0("Working on ",
+                                                    i, " model.")) }
                 set.seed(train_seed)
-                train_models[[iter_b]] <- try(caret::train(class~., data = train_df, metric = metric, method = i,
-                                                           allowParallel = TRUE, trControl = ctrl,
+                train_models[[iter_b]] <- try(caret::train(class~.,
+                                                           data = train_df,
+                                                           metric = metric,
+                                                           method = i,
+                                                           allowParallel = TRUE,
+                                                           trControl = ctrl,
                                                            tuneLength = tune_length),
                                               silent = TRUE)
                 if (inherits(train_models[[iter_b]], "try-error")) { next }
@@ -267,8 +323,12 @@ ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
                 iter_c <- iter_c + 1
                 if (quiet != TRUE) { message(paste0("Working on ", i, " model.")) }
                 set.seed(train_seed)
-                train_models[[iter_c]] <- try(caret::train(x = train_x, y = train_df$class, metric = metric, method = i,
-                                                           trControl = ctrl, tuneLength = tune_length),
+                train_models[[iter_c]] <- try(caret::train(x = train_x,
+                                                           y = train_df$class,
+                                                           metric = metric,
+                                                           method = i,
+                                                           trControl = ctrl,
+                                                           tuneLength = tune_length),
                                               silent = TRUE)
                 if (inherits(train_models[[iter_c]], "try-error")) { next }
                 names(train_models)[iter_c] <- i
@@ -284,7 +344,8 @@ ph_train <- function(train_df, vali_df, test_df, class_col, ctrl,
     # Turn off cluster.
     on.exit(parallel::stopCluster(cl))
     # Output vars.
-    list(train_models = train_models, train_df = train_df, vali_df = vali_df, test_df = test_df,
-         task = task, ctrl = ctrl, methods = methods, search = search, n_cores = n_cores,
-         metric = metric, tune_length = tune_length)
+    list(train_models = train_models, train_df = train_df, vali_df = vali_df,
+         test_df = test_df, task = task, ctrl = ctrl, methods = methods,
+         search = search, n_cores = n_cores, metric = metric,
+         tune_length = tune_length)
 }

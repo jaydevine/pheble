@@ -7,8 +7,9 @@
 #' @returns A data frame of column-wise class predictions with class levels equal to the observed class.
 #' @export
 #' @examples
-#' ## Make data frame of predicted classes with different levels. One column
-#' ## should contain the observed classes with every possible level.
+#' ## Make data frame of predicted classes with different levels.
+#' ## An internal or external column should contain the observed
+#' ## classes with every possible level.
 #' obs <- as.factor(c("A", "C", "B", "D", "E"))
 #' method_a <- c("A", "B", "B", "C", "D")
 #' method_b <- c("A", "C", "B", "D", "C")
@@ -21,7 +22,9 @@ ph_equate <- function(df, class)
     if (!is.factor(class))
         stop("Class must be a factor).")
     for (i in 1:ncol(df)) {
-        df[, i] <- factor(df[, i], levels = unique(class), ordered = FALSE)
+        df[, i] <- factor(df[, i],
+                          levels = unique(class),
+                          ordered = FALSE)
     }
     return(df)
 }

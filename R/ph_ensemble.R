@@ -59,37 +59,55 @@
 #' ## Import data.
 #' data(ph_crocs)
 #' ## Remove anomalies with autoencoder.
-#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
-#'                       method = "ae")
+#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
+#'                       class_col = "Species", method = "ae")
 #' ## Preprocess anomaly-free data frame into train, validation, and test sets
 #' ## with PCs as predictors.
-#' pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
-#'                   vali_pct = 0.15, test_pct = 0.15, method = "pca")
+#' pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample",
+#'                   class_col = "Species", vali_pct = 0.15,
+#'                   test_pct = 0.15, method = "pca")
 #' ## Echo control object for train function.
 #' ctrl <- ph_ctrl(ph_crocs$Species, resample_method = "boot")
 #' ## Train all models for ensemble.
 #' \dontrun{
-#' train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
-#'                          test_df = pc_dfs$test_df, class_col = "Species",
-#'                          ctrl = ctrl, task = "multi", methods = "all",
-#'                          tune_length = 5, quiet = FALSE)
+#' train_models <- ph_train(train_df = pc_dfs$train_df,
+#'                          vali_df = pc_dfs$vali_df,
+#'                          test_df = pc_dfs$test_df,
+#'                          class_col = "Species",
+#'                          ctrl = ctrl,
+#'                          task = "multi",
+#'                          methods = "all",
+#'                          tune_length = 5,
+#'                          quiet = FALSE)
 #' }
 #' ## You can also train just a few, although more is preferable.
-#' train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
-#'                          test_df = pc_dfs$test_df, class_col = "Species",
-#'                          ctrl = ctrl, task = "multi", methods = c("lda", "mda", "nnet",
-#'                          "pda", "sparseLDA"),
-#'                          tune_length = 5, quiet = FALSE)
+#' train_models <- ph_train(train_df = pc_dfs$train_df,
+#'                          vali_df = pc_dfs$vali_df,
+#'                          test_df = pc_dfs$test_df,
+#'                          class_col = "Species",
+#'                          ctrl = ctrl,
+#'                          task = "multi",
+#'                          methods = c("lda", "mda",
+#'                          "nnet", "pda", "sparseLDA"),
+#'                          tune_length = 5,
+#'                          quiet = FALSE)
 #' ## Train the ensemble.
 #' ensemble_model <- ph_ensemble(train_models = train_models$train_models,
-#'                               train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
-#'                               test_df = pc_dfs$test_df, class_col = "Species", ctrl = ctrl,
-#'                               task = "multi", top_models = 3, metalearner = "glmnet",
-#'                               tune_length = 25, quiet = FALSE)
+#'                               train_df = pc_dfs$train_df,
+#'                               vali_df = pc_dfs$vali_df,
+#'                               test_df = pc_dfs$test_df,
+#'                               class_col = "Species",
+#'                               ctrl = ctrl,
+#'                               task = "multi",
+#'                               top_models = 3,
+#'                               metalearner = "glmnet",
+#'                               tune_length = 25,
+#'                               quiet = FALSE)
 ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
                         ctrl, train_seed = 123, n_cores = 2, task = "multi",
-                        metric = ifelse(task == "multi", "Kappa", "ROC"), top_models = 3,
-                        metalearner = ifelse(task == "multi", "glmnet", "rf"),
+                        metric = ifelse(task == "multi", "Kappa", "ROC"),
+                        top_models = 3, metalearner = ifelse(task == "multi",
+                                                             "glmnet", "rf"),
                         tune_length = 10, quiet = FALSE)
 {
     # Ensure that class is the first column of each data frame.
@@ -97,10 +115,14 @@ ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
     if (class_col %in% colnames(train_df) != TRUE |
         class_col %in% colnames(vali_df) != TRUE |
         class_col %in% colnames(test_df) != TRUE)
-        stop("Either the class column name is not in one or more of the data frames or it is inconsistent between data frames.")
-    train_df <- train_df[, c(which(colnames(train_df) == class_col), which(colnames(train_df) != class_col))]
-    vali_df <- vali_df[, c(which(colnames(vali_df) == class_col), which(colnames(vali_df) != class_col))]
-    test_df <- test_df[, c(which(colnames(test_df) == class_col), which(colnames(test_df) != class_col))]
+        stop(paste("Either the class column name is not in one or more of the",
+                   "data frames or it is inconsistent between data frames."))
+    train_df <- train_df[, c(which(colnames(train_df) == class_col),
+                             which(colnames(train_df) != class_col))]
+    vali_df <- vali_df[, c(which(colnames(vali_df) == class_col),
+                           which(colnames(vali_df) != class_col))]
+    test_df <- test_df[, c(which(colnames(test_df) == class_col),
+                           which(colnames(test_df) != class_col))]
     colnames(train_df)[which(colnames(train_df) == class_col)] <- "class"
     colnames(vali_df)[which(colnames(vali_df) == class_col)] <- "class"
     colnames(test_df)[which(colnames(test_df) == class_col)] <- "class"
@@ -111,19 +133,22 @@ ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
     if (ncol(train_df) != ncol(vali_df) |
         ncol(train_df) != ncol(test_df) |
         ncol(vali_df) != ncol(test_df))
-        stop("The number of predictors (columns) are inconsistent between data frames.")
+        stop(paste("The number of predictors (columns) are inconsistent",
+                   "between data frames."))
     if (!is.numeric(n_cores))
         stop("The number of cores must be numeric (an integer).")
     if (!(task %in% c("multi", "binary")))
         stop("The classification task does not exist.")
     if (length(train_models) < 2)
         stop("At least two train models are needed for the ensemble.")
-    if (!(metric %in% c("logLoss", "Accuracy", "Mean_Balanced_Accuracy", "Mean_F1", "Kappa", "ROC")))
+    if (!(metric %in% c("logLoss", "Accuracy", "Mean_Balanced_Accuracy",
+                        "Mean_F1", "Kappa", "ROC")))
         stop("The metric does not exist.")
     if (tune_length < 1)
         stop("Tune length must be 1 or higher.")
     if (!is.numeric(top_models))
-        stop("The number of models for the ensemble must be numeric (an integer).")
+        stop(paste("The number of models for the ensemble must be numeric",
+                   "(an integer)."))
     # Start cluster.
     cl <- parallel::makeCluster(n_cores)
     doParallel::registerDoParallel(cl)
@@ -136,18 +161,21 @@ ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
     # Check levels.
     if (length(levels(train_df$class)) > 2 & task == "binary")
         stop("The task and number of class levels do not match.")
-    # Verify that factor levels in test and validation datasets have > 2 observations.
+    # Verify that factor levels in test and validation datasets
+    # have > 2 observations.
     vali_levels <- as.data.frame(table(vali_df$class))
     test_levels <- as.data.frame(table(test_df$class))
     vali_check <- which(vali_levels$Freq < 2)
     test_check <- which(test_levels$Freq < 2)
     if (length(vali_check) > 0)
         stop(cat(paste0(vali_levels$Var1[vali_check],
-                        " needs at least two observations in the validation set.", "\n"),
+                        " needs at least two observations in the validation",
+                        " set.", "\n"),
                  sep = ""))
     if (length(test_check) > 0)
         stop(cat(paste0(test_levels$Var1[test_check],
-                        " needs at least two observations in the test set.", "\n"),
+                        " needs at least two observations in the test set.",
+                        "\n"),
                  sep = ""))
     if (!is.list(ctrl))
         stop("Control object must be a list.")
@@ -156,7 +184,8 @@ ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
     all_test_preds <- list()
     for (i in train_models) {
         iter_a <- iter_a + 1
-        all_test_preds[[iter_a]] <- tryCatch(stats::predict(i, test_df), error = function(e) NA)
+        all_test_preds[[iter_a]] <- tryCatch(stats::predict(i, test_df),
+                                             error = function(e) NA)
     }
     names(all_test_preds) <- names(train_models)
     all_test_preds <- as.data.frame(dplyr::bind_cols(all_test_preds))
@@ -168,9 +197,12 @@ ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
     }
     all_test_preds <- ph_equate(df = all_test_preds, class = test_df$class)
     all_test_cm <- list()
-    if (quiet != TRUE) { message("Generating test predictions for all models.") }
+    if (quiet != TRUE) {
+        message("Generating test predictions for all models.")
+    }
     for (i in 1:ncol(all_test_preds)) {
-        all_test_results <- ph_eval(pred = all_test_preds[, i], obs = test_df$class)
+        all_test_results <- ph_eval(pred = all_test_preds[, i],
+                                    obs = test_df$class)
         all_test_cm[[i]] <- all_test_results
         i <- i + 1
     }
@@ -186,15 +218,17 @@ ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
     acc_sum <- acc_sum[order(-acc_sum[,4]), ]
     if (top_models > nrow(acc_sum)) {
         top_models <- nrow(acc_sum)
-        warning(paste0("The number of top models is greater than the number of potential models.
-                       Setting top_models to ", top_models, "."))
+        warning(paste0("The number of top models is greater than the number",
+                       " of potential models. Setting top_models to ",
+                       top_models, "."))
     }
     top_methods <- rownames(acc_sum)[1:top_models]
     # Match acc_methods with method_list.
     top_acc_match <- match(top_methods, names(train_models))
     train_models <- train_models[c(top_acc_match)]
     # Get variable importances from these models.
-    var_imps <- matrix(nrow = ncol(train_df[, -1]), ncol = length(top_acc_match))
+    var_imps <- matrix(nrow = ncol(train_df[, -1]),
+                       ncol = length(top_acc_match))
     colnames(var_imps) <- names(train_models)
     rownames(var_imps) <- colnames(train_df[, -1])
     iter_a <- 0
@@ -202,14 +236,17 @@ ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
         try({
         iter_a <- iter_a + 1
         var_imp <- caret::varImp(i)
-        var_imp_match <- match(rownames(var_imp$importance), rownames(var_imps))
+        var_imp_match <- match(rownames(var_imp$importance),
+                               rownames(var_imps))
         var_imps[var_imp_match, iter_a] <- var_imp$importance[, 1]
         }, silent = TRUE)
     }
     # Convert NAs to 0s. Some models do not support variable importance.
     var_imps[is.na(var_imps)] <- 0
     # Evaluate models on validation and test sets.
-    if (quiet != TRUE) { message("Generating validation and test predictions for ensemble model.") }
+    if (quiet != TRUE) {
+        message("Generating validation and test predictions for ensemble model.")
+    }
     # Get validation and test predictions.
     vali_preds <- stats::predict(train_models, vali_df)
     test_preds <- stats::predict(train_models, test_df)
@@ -218,34 +255,48 @@ ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
     colnames(vali_preds) <- names(train_models)
     colnames(test_preds) <- names(train_models)
     # Concatenate original validation and test class with preds.
-    vali_preds <- data.frame(class = vali_df$class, vali_preds, stringsAsFactors = F)
-    test_preds <- data.frame(class = test_df$class, test_preds, stringsAsFactors = F)
+    vali_preds <- data.frame(class = vali_df$class, vali_preds,
+                             stringsAsFactors = F)
+    test_preds <- data.frame(class = test_df$class, test_preds,
+                             stringsAsFactors = F)
     # Make sure factor levels are the same across data frame.
     vali_preds <- ph_equate(df = vali_preds, class = vali_df$class)
     test_preds <- ph_equate(df = test_preds, class = test_df$class)
     # Variable importances for the ensemble.
-    ensemble_imps <- rowMeans(caret::filterVarImp(vali_preds[, -1], vali_preds[, 1]))
+    ensemble_imps <- rowMeans(caret::filterVarImp(vali_preds[, -1],
+                                                  vali_preds[, 1]))
     var_imps <- as.data.frame(rowMeans(t(t(var_imps) * ensemble_imps)))
     colnames(var_imps)[1] <- "Importance"
     # Ensemble model.
     if (quiet != TRUE) { message("Working on ensemble model.") }
     set.seed(train_seed)
-    ensemble_model <- caret::train(class~., data = vali_preds, metric = metric, method = metalearner,
-                                   allowParallel = TRUE, trControl = ctrl, tuneLength = tune_length)
+    ensemble_model <- caret::train(class~.,
+                                   data = vali_preds,
+                                   metric = metric,
+                                   method = metalearner,
+                                   allowParallel = TRUE,
+                                   trControl = ctrl,
+                                   tuneLength = tune_length)
     if (quiet != TRUE) { message("Training complete.") }
     ensemble_test_preds <- stats::predict(ensemble_model, test_preds)
-    ensemble_test_results <- ph_eval(pred = ensemble_test_preds, obs = test_df$class)
+    ensemble_test_results <- ph_eval(pred = ensemble_test_preds,
+                                     obs = test_df$class)
     rownames(ensemble_test_results) <- paste0("top_", top_models, "_ensemble")
-    # Combine individual model test results and ensemble test results, then sort by balanced accuracy.
-    all_test_results <- rbind.data.frame(all_test_results, ensemble_test_results)
-    all_test_results <- all_test_results[order(all_test_results$F1, decreasing = TRUE), ]
+    # Combine individual model test results and ensemble test results, then
+    # sort by F1.
+    all_test_results <- rbind.data.frame(all_test_results,
+                                         ensemble_test_results)
+    all_test_results <- all_test_results[order(all_test_results$F1,
+                                               decreasing = TRUE), ]
     colnames(all_test_results)[1] <- "Method"
     # Turn off cluster.
     on.exit(parallel::stopCluster(cl))
     # Output vars.
-    list(ensemble_test_preds = ensemble_test_preds, vali_preds = vali_preds, test_preds = test_preds,
-         all_test_preds = all_test_preds, all_test_results = all_test_results, ensemble_model = ensemble_model,
-         var_imps = var_imps, train_df = train_df, vali_df = vali_df, test_df = test_df,
-         train_models = train_models, ctrl = ctrl, metric = metric, task = task,
-         tune_length = tune_length, top_models = top_models, metalearner = metalearner)
+    list(ensemble_test_preds = ensemble_test_preds, vali_preds = vali_preds,
+         test_preds = test_preds, all_test_preds = all_test_preds,
+         all_test_results = all_test_results, ensemble_model = ensemble_model,
+         var_imps = var_imps, train_df = train_df, vali_df = vali_df,
+         test_df = test_df, train_models = train_models, ctrl = ctrl,
+         metric = metric, task = task, tune_length = tune_length,
+         top_models = top_models, metalearner = metalearner)
 }

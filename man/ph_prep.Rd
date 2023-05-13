@@ -95,15 +95,17 @@ the best model.
 ## Import data.
 data(ph_crocs)
 ## Remove anomalies with autoencoder.
-rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
-                      method = "ae")
-## Preprocess anomaly-free data frame into train, validation, and test sets with
-## PCs as predictors.
-pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
-                  vali_pct = 0.15, test_pct = 0.15, method = "pca")
-## Alternatively, preprocess data frame into train, validation, and test sets with
-## latent variables as predictors. Notice that port is defined, because running
-## H2O sessions one after another can return connection errors.
+rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
+                      class_col = "Species", method = "ae")
+## Preprocess anomaly-free data frame into train, validation, and test sets
+## with PCs as predictors.
+pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample",
+                  class_col = "Species", vali_pct = 0.15,
+                  test_pct = 0.15, method = "pca")
+## Alternatively, preprocess data frame into train, validation, and test
+## sets with latent variables as predictors. Notice that port is defined,
+## because running H2O sessions one after another can cause connection
+## errors.
 ae_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
                   vali_pct = 0.15, test_pct = 0.15, method = "ae", port = 50001)
 }

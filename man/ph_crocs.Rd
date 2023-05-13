@@ -16,7 +16,8 @@ A data frame of Procrustes superimposed shape data with 183 rows and 236 columns
 }
 }
 \source{
-\url{http://dx.doi.org/10.5061/dryad.14fn1}
+Downloaded from
+\if{html}{\out{<\doi{dx.doi.org/10.5061/dryad.14fn1}>}}
 }
 \usage{
 ph_crocs

@@ -18,8 +18,9 @@ A data frame of column-wise class predictions with class levels equal to the obs
 The \code{ph_equate} function ensures that the factor levels in all columns are equal. When classification are heavily biased or inaccurate, they can return new class predictions that do not contain every level in the original data. This can interfere with model evaluation functions e.g. via a confusion matrix.
 }
 \examples{
-## Make data frame of predicted classes with different levels. One column
-## should contain the observed classes with every possible level.
+## Make data frame of predicted classes with different levels.
+## An internal or external column should contain the observed
+## classes with every possible level.
 obs <- as.factor(c("A", "C", "B", "D", "E"))
 method_a <- c("A", "B", "B", "C", "D")
 method_b <- c("A", "C", "B", "D", "C")

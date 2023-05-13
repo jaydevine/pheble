@@ -82,25 +82,36 @@ minimize user input and simplify the training.
 ## Import data.
 data(ph_crocs)
 ## Remove anomalies with autoencoder.
-rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
-                      method = "ae")
+rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
+                      class_col = "Species", method = "ae")
 ## Preprocess anomaly-free data frame into train, validation, and test sets
 ## with PCs as predictors.
-pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
-                  vali_pct = 0.15, test_pct = 0.15, method = "pca")
+pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample",
+                  class_col = "Species", vali_pct = 0.15,
+                  test_pct = 0.15, method = "pca")
 ## Echo control object for train function.
 ctrl <- ph_ctrl(ph_crocs$Species, resample_method = "boot")
 ## Train all models for ensemble.
 \dontrun{
-train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
-                         test_df = pc_dfs$test_df, class_col = "Species", ctrl = ctrl,
-                         task = "multi", methods = "all", tune_length = 5,
+train_models <- ph_train(train_df = pc_dfs$train_df,
+                         vali_df = pc_dfs$vali_df,
+                         test_df = pc_dfs$test_df,
+                         class_col = "Species",
+                         ctrl = ctrl,
+                         task = "multi",
+                         methods = "all",
+                         tune_length = 5,
                          quiet = FALSE)
 }
 ## You can also train just a few, although more is preferable.
-train_models <- ph_train(train_df = pc_dfs$train_df, vali_df = pc_dfs$vali_df,
-                         test_df = pc_dfs$test_df, class_col = "Species",
-                         ctrl = ctrl, task = "multi", methods = c("lda", "mda", "nnet",
-                         "pda", "sparseLDA"),
-                         tune_length = 5, quiet = FALSE)
+train_models <- ph_train(train_df = pc_dfs$train_df,
+                         vali_df = pc_dfs$vali_df,
+                         test_df = pc_dfs$test_df,
+                         class_col = "Species",
+                         ctrl = ctrl,
+                         task = "multi",
+                         methods = c("lda", "mda",
+                         "nnet", "pda", "sparseLDA"),
+                         tune_length = 5,
+                         quiet = FALSE)
 }

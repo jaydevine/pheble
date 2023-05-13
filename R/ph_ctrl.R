@@ -16,15 +16,20 @@
 #' data(ph_crocs)
 #' ## Echo control object for train function.
 #' ctrl <- ph_ctrl(ph_crocs$Species, resample_method = "boot")
-ph_ctrl <- function(class, resample_method = "boot", number = ifelse(grepl("cv", resample_method, ignore.case = TRUE), 10, 25),
-                    repeats = ifelse(grepl("dcv$", resample_method, ignore.case = TRUE), 3, NA), search = "random",
+ph_ctrl <- function(class, resample_method = "boot",
+                    number = ifelse(grepl("cv", resample_method,
+                                          ignore.case = TRUE), 10, 25),
+                    repeats = ifelse(grepl("dcv$", resample_method,
+                                           ignore.case = TRUE), 3, NA),
+                    search = "random",
                     sampling = NULL)
 {
     if (!is.factor(class)) { class <- as.factor(class) }
     if (!(resample_method %in% c("boot", "cv", "LOOCV", "repeatedcv")))
         stop("Resampling method does not exist.")
     if (!is.numeric(number))
-        stop("Number of resampling iterations or folds must be numeric (an integer).")
+        stop(paste("Number of resampling iterations or folds must be",
+                   "numeric (an integer)."))
     if (!is.na(repeats))
         if (!is.numeric(repeats))
             stop("Number of repeats must be numeric (an integer).")

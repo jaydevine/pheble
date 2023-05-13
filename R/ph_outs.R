@@ -71,25 +71,28 @@ ph_outs <- function(x)
 #' ## Import data.
 #' data(ph_crocs)
 #' ## Remove anomalies with autoencoder.
-#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
-#'                       method = "ae")
-#' ## Alternatively, remove anomalies with extended isolation forest. Notice that
-#' ## port is defined, because running H2O sessions one after another can return
-#' ## connection errors.
-#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
-#'                       method = "iso", port = 50001)
+#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
+#'                       class_col = "Species", method = "ae")
+#' ## Alternatively, remove anomalies with extended isolation forest. Notice
+#' ## that port is defined, because running H2O sessions one after another
+#' ## can return connection errors.
+#' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
+#'                       class_col = "Species", method = "iso",
+#'                       port = 50001)
 ph_anomaly <- function(df, ids_col, class_col, method = "ae", scale = FALSE,
-                       center = NULL, sd = NULL, max_mem_size = "15g", port = 54321,
-                       train_seed = 123, hyper_params = list(), search = "random",
-                       tune_length = 100)
+                       center = NULL, sd = NULL, max_mem_size = "15g",
+                       port = 54321, train_seed = 123, hyper_params = list(),
+                       search = "random", tune_length = 100)
 {
     df <- as.data.frame(df)
     if (!is.character(ids_col)) { ids_col <- as.character(ids_col) }
     if (!is.character(class_col)) { class_col <- as.character(class_col) }
     if (!(ids_col %in% colnames(df)))
-        stop("The ids column is either not in the data frame or it is differently named.")
+        stop(paste("The ids column is either not in the data frame or is",
+                   "differently named."))
     if (!(class_col %in% colnames(df)))
-        stop("The class column is either not in the data frame or it is differently named.")
+        stop(paste("The class column is either not in the data frame or is",
+                   "differently named."))
     if (!(method %in% c("ae", "iso")))
         stop("Anomaly detection method does not exist.")
     if (length(method) > 1)
@@ -144,18 +147,23 @@ ph_anomaly <- function(df, ids_col, class_col, method = "ae", scale = FALSE,
         search = "Cartesian"
     }
     if (search == "RandomDiscrete") {
-        search_criteria <- list(strategy = search, max_models = tune_length,
-                                stopping_metric = "AUTO", stopping_tolerance = 0.00001)
+        search_criteria <- list(strategy = search,
+                                max_models = tune_length,
+                                stopping_metric = "AUTO",
+                                stopping_tolerance = 0.00001)
     } else {
-        search_criteria <- list(strategy = search, stopping_metric = "AUTO",
+        search_criteria <- list(strategy = search,
+                                stopping_metric = "AUTO",
                                 stopping_tolerance = 0.00001)
     }
     # Train autoencoder.
     if (method == "ae") {
         # Redefine search strategy names; making them consistent with train.
         if (length(hyper_params) == 0) {
-            hyper_params <- list(missing_values_handling = "Skip", activation = "Rectifier",
-                                 hidden = list(5, 25, 50, 100, 250, 500, nrow(df_h2o)),
+            hyper_params <- list(missing_values_handling = "Skip",
+                                 activation = "Rectifier",
+                                 hidden = list(5, 25, 50, 100, 250, 500,
+                                               nrow(df_h2o)),
                                  input_dropout_ratio = c(0, 0.1, 0.2, 0.3),
                                  rate = c(0, 0.01, 0.005, 0.001))
         } else {
@@ -164,13 +172,21 @@ ph_anomaly <- function(df, ids_col, class_col, method = "ae", scale = FALSE,
         if (!is.list(hyper_params))
             stop("Hyperparameters must be supplied as a list.")
         grid <- suppressWarnings(
-                    h2o::h2o.grid(algorithm = 'deeplearning', x = predictors, training_frame = df_h2o,
-                                  grid_id = 'ae_grid', autoencoder = TRUE, hyper_params = hyper_params,
-                                  search_criteria = search_criteria, sparse = FALSE, ignore_const_cols = FALSE,
+                    h2o::h2o.grid(algorithm = 'deeplearning',
+                                  x = predictors,
+                                  training_frame = df_h2o,
+                                  grid_id = 'ae_grid',
+                                  autoencoder = TRUE,
+                                  hyper_params = hyper_params,
+                                  search_criteria = search_criteria,
+                                  sparse = FALSE,
+                                  ignore_const_cols = FALSE,
                                   seed = train_seed)
                 )
         grids <- suppressWarnings(
-                    h2o::h2o.getGrid(grid_id = "ae_grid", sort_by = "mse", decreasing = FALSE)
+                    h2o::h2o.getGrid(grid_id = "ae_grid",
+                                     sort_by = "mse",
+                                     decreasing = FALSE)
                  )
         model <- h2o::h2o.getModel(grids@model_ids[[1]])
         # Anomaly detection.
@@ -186,13 +202,17 @@ ph_anomaly <- function(df, ids_col, class_col, method = "ae", scale = FALSE,
         if (!is.list(hyper_params))
             stop("Hyperparameters must be supplied as a list.")
         grid <- suppressWarnings(
-                    h2o::h2o.grid(algorithm = 'extendedisolationforest', x = predictors,
-                                  training_frame = df_h2o, grid_id = 'iso_grid',
-                                  hyper_params = hyper_params, search_criteria = search_criteria,
+                    h2o::h2o.grid(algorithm = 'extendedisolationforest',
+                                  x = predictors,
+                                  training_frame = df_h2o,
+                                  grid_id = 'iso_grid',
+                                  hyper_params = hyper_params,
+                                  search_criteria = search_criteria,
                                   seed = train_seed)
                 )
         grids <- suppressWarnings(
-                     h2o::h2o.getGrid(grid_id = "iso_grid", decreasing = TRUE)
+                     h2o::h2o.getGrid(grid_id = "iso_grid",
+                                      decreasing = TRUE)
                  )
         model <- h2o::h2o.getModel(grids@model_ids[[1]])
         # Anomaly detection.

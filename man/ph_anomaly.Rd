@@ -71,11 +71,12 @@ the best model.
 ## Import data.
 data(ph_crocs)
 ## Remove anomalies with autoencoder.
-rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
-                      method = "ae")
-## Alternatively, remove anomalies with extended isolation forest. Notice that
-## port is defined, because running H2O sessions one after another can return
-## connection errors.
-rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample", class_col = "Species",
-                      method = "iso", port = 50001)
+rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
+                      class_col = "Species", method = "ae")
+## Alternatively, remove anomalies with extended isolation forest. Notice
+## that port is defined, because running H2O sessions one after another
+## can return connection errors.
+rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
+                      class_col = "Species", method = "iso",
+                      port = 50001)
 }
