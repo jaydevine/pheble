@@ -58,6 +58,7 @@
 #' @examples
 #' ## Import data.
 #' data(ph_crocs)
+#' \dontrun{
 #' ## Remove anomalies with autoencoder.
 #' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
 #'                       class_col = "Species", method = "ae")
@@ -69,7 +70,6 @@
 #' ## Echo control object for train function.
 #' ctrl <- ph_ctrl(ph_crocs$Species, resample_method = "boot")
 #' ## Train all models for ensemble.
-#' \dontrun{
 #' train_models <- ph_train(train_df = pc_dfs$train_df,
 #'                          vali_df = pc_dfs$vali_df,
 #'                          test_df = pc_dfs$test_df,
@@ -79,7 +79,6 @@
 #'                          methods = "all",
 #'                          tune_length = 5,
 #'                          quiet = FALSE)
-#' }
 #' ## You can also train just a few, although more is preferable.
 #' train_models <- ph_train(train_df = pc_dfs$train_df,
 #'                          vali_df = pc_dfs$vali_df,
@@ -103,6 +102,7 @@
 #'                               metalearner = "glmnet",
 #'                               tune_length = 25,
 #'                               quiet = FALSE)
+#' }
 ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
                         ctrl, train_seed = 123, n_cores = 2, task = "multi",
                         metric = ifelse(task == "multi", "Kappa", "ROC"),

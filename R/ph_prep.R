@@ -50,6 +50,7 @@
 #' @examples
 #' ## Import data.
 #' data(ph_crocs)
+#' \dontrun{
 #' ## Remove anomalies with autoencoder.
 #' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
 #'                       class_col = "Species", method = "ae")
@@ -64,6 +65,7 @@
 #' ## errors.
 #' ae_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample", class_col = "Species",
 #'                   vali_pct = 0.15, test_pct = 0.15, method = "ae", port = 50001)
+#' }
 ph_prep <- function(df, ids_col, class_col, vali_pct = 0.15, test_pct = 0.15,
                     scale = FALSE, center = NULL, sd = NULL, split_seed = 123,
                     method = "pca", pca_pct = 0.95, max_mem_size = "15g",

@@ -70,6 +70,7 @@ ph_outs <- function(x)
 #' @examples
 #' ## Import data.
 #' data(ph_crocs)
+#' \dontrun{
 #' ## Remove anomalies with autoencoder.
 #' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
 #'                       class_col = "Species", method = "ae")
@@ -79,6 +80,7 @@ ph_outs <- function(x)
 #' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
 #'                       class_col = "Species", method = "iso",
 #'                       port = 50001)
+#' }
 ph_anomaly <- function(df, ids_col, class_col, method = "ae", scale = FALSE,
                        center = NULL, sd = NULL, max_mem_size = "15g",
                        port = 54321, train_seed = 123, hyper_params = list(),
