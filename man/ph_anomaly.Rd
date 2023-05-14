@@ -70,6 +70,7 @@ the best model.
 \examples{
 ## Import data.
 data(ph_crocs)
+\dontrun{
 ## Remove anomalies with autoencoder.
 rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
                       class_col = "Species", method = "ae")
@@ -79,4 +80,5 @@ rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
 rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
                       class_col = "Species", method = "iso",
                       port = 50001)
+}
 }

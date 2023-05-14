@@ -81,6 +81,7 @@ minimize user input and simplify the training.
 \examples{
 ## Import data.
 data(ph_crocs)
+\dontrun{
 ## Remove anomalies with autoencoder.
 rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
                       class_col = "Species", method = "ae")
@@ -92,7 +93,6 @@ pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample",
 ## Echo control object for train function.
 ctrl <- ph_ctrl(ph_crocs$Species, resample_method = "boot")
 ## Train all models for ensemble.
-\dontrun{
 train_models <- ph_train(train_df = pc_dfs$train_df,
                          vali_df = pc_dfs$vali_df,
                          test_df = pc_dfs$test_df,
@@ -102,7 +102,6 @@ train_models <- ph_train(train_df = pc_dfs$train_df,
                          methods = "all",
                          tune_length = 5,
                          quiet = FALSE)
-}
 ## You can also train just a few, although more is preferable.
 train_models <- ph_train(train_df = pc_dfs$train_df,
                          vali_df = pc_dfs$vali_df,
@@ -114,4 +113,5 @@ train_models <- ph_train(train_df = pc_dfs$train_df,
                          "nnet", "pda", "sparseLDA"),
                          tune_length = 5,
                          quiet = FALSE)
+}
 }

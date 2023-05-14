@@ -20,6 +20,7 @@ The \code{ph_eval} function generates a confusion matrix for binary or multi-cla
 \examples{
 ## Import data.
 data(ph_crocs)
+\dontrun{
 ## Remove anomalies with autoencoder.
 rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
                       class_col = "Species", method = "ae")
@@ -45,4 +46,5 @@ train_models <- ph_train(train_df = pc_dfs$train_df,
 test_pred <- predict(train_models$train_models[[1]], pc_dfs$test_df)
 test_obs <- as.factor(pc_dfs$test_df$Species)
 test_cm <- ph_eval(pred = test_pred, obs = test_obs)
+}
 }
