@@ -50,7 +50,7 @@
 #' @examples
 #' ## Import data.
 #' data(ph_crocs)
-#' \dontrun{
+#' \donttest{
 #' ## Remove anomalies with autoencoder.
 #' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
 #'                       class_col = "Species", method = "ae")

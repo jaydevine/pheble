@@ -58,7 +58,7 @@
 #' @examples
 #' ## Import data.
 #' data(ph_crocs)
-#' \dontrun{
+#' \donttest{
 #' ## Remove anomalies with autoencoder.
 #' rm_outs <- ph_anomaly(df = ph_crocs, ids_col = "Biosample",
 #'                       class_col = "Species", method = "ae")
@@ -168,15 +168,13 @@ ph_ensemble <- function(train_models, train_df, vali_df, test_df, class_col,
     vali_check <- which(vali_levels$Freq < 2)
     test_check <- which(test_levels$Freq < 2)
     if (length(vali_check) > 0)
-        stop(cat(paste0(vali_levels$Var1[vali_check],
-                        " needs at least two observations in the validation",
-                        " set.", "\n"),
-                 sep = ""))
+        stop(paste0(vali_levels$Var1[vali_check],
+                    " needs at least two observations in the validation",
+                    " set.", sep = ""))
     if (length(test_check) > 0)
-        stop(cat(paste0(test_levels$Var1[test_check],
-                        " needs at least two observations in the test set.",
-                        "\n"),
-                 sep = ""))
+        stop(paste0(test_levels$Var1[test_check],
+                    " needs at least two observations in the test set.",
+                    sep = ""))
     if (!is.list(ctrl))
         stop("Control object must be a list.")
     # Evaluate every initial model.
