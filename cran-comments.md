@@ -1,5 +1,7 @@
 ## R CMD check results
 
+Duration: 1h 31m 50.6s
+
 0 errors ✔ | 0 warnings ✔ | 3 notes ✖
 
 ❯ checking CRAN incoming feasibility ... NOTE
@@ -9,9 +11,9 @@
   
   Possibly misspelled words in DESCRIPTION:
     Phenotypes (2:37)
-    pre (12:17)
-
-* "Phenotypes" is not misspelled. In addition, a DOI doesn't exist (i.e., "TBD") because the paper hasn't been published yet.
+    pre (11:58)
+    
+* "Phenotypes" is not misspelled and "pre" is used in "pre-processing, which is also not misspelled.
 
 ❯ checking package dependencies ... NOTE
   Imports includes 31 non-default packages.
