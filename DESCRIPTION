@@ -10,7 +10,7 @@ Description: A system for binary and multi-class classification of
     predictions from different caret classification models, this package
     attempts to improve performance over individual learners. The
     pre-processing, training, validation, and testing are performed end-to-end
-    to minimize user input and simplifying the process of classification.
+    to minimize user input and simplify the process of classification.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
