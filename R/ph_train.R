@@ -59,6 +59,7 @@
 #' ## Echo control object for train function.
 #' ctrl <- ph_ctrl(ph_crocs$Species, resample_method = "boot")
 #' ## Train all models for ensemble.
+#' ## Note: Increasing n_cores will dramatically reduce train time.
 #' train_models <- ph_train(train_df = pc_dfs$train_df,
 #'                          vali_df = pc_dfs$vali_df,
 #'                          test_df = pc_dfs$test_df,
@@ -69,6 +70,7 @@
 #'                          tune_length = 5,
 #'                          quiet = FALSE)
 #' ## You can also train just a few, although more is preferable.
+#' ## Note: Increasing n_cores will dramatically reduce train time.
 #' train_models <- ph_train(train_df = pc_dfs$train_df,
 #'                          vali_df = pc_dfs$vali_df,
 #'                          test_df = pc_dfs$test_df,
