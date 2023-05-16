@@ -19,7 +19,7 @@ A data frame of Procrustes superimposed shape data with 190 rows and 214 columns
 }
 \source{
 Downloaded from
-\if{html}{\out{<\doi{doi.org/10.5061/dryad.xd2547dkw}>}}
+<\doi{doi.org/10.5061/dryad.xd2547dkw}>
 }
 \usage{
 ph_stickleback
