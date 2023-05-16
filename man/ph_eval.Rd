@@ -32,6 +32,7 @@ pc_dfs <- ph_prep(df = rm_outs$df, ids_col = "Biosample",
 ## Echo control object for train function.
 ctrl <- ph_ctrl(ph_crocs$Species, resample_method = "boot")
 ## Train a few models for ensemble, although more is preferable.
+## Note: Increasing n_cores will dramatically reduce train time.
 train_models <- ph_train(train_df = pc_dfs$train_df,
                          vali_df = pc_dfs$vali_df,
                          test_df = pc_dfs$test_df,
