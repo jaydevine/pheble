@@ -1,6 +1,6 @@
 ## R CMD check results
 
-Duration: 1h 31m 50.6s
+Duration: 1h 21m 40.3s
 
 0 errors ✔ | 0 warnings ✔ | 3 notes ✖
 
@@ -20,7 +20,7 @@ Duration: 1h 31m 50.6s
   Importing from so many packages makes the package vulnerable to any of
   them becoming unavailable.  Move as many as possible to Suggests and
   use conditionally.
-
+  
 * We need all of these packages to call the methods in the ensemble, otherwise method = "all" can't be used in ph_train().
 
 ❯ checking dependencies in R code ... NOTE
@@ -30,7 +30,7 @@ Duration: 1h 31m 50.6s
     ‘kernlab’ ‘kknn’ ‘klaR’ ‘mda’ ‘nnet’ ‘party’ ‘pls’ ‘randomForest’
     ‘rpartScore’ ‘sparseLDA’ ‘themis’
     All declared Imports should be used.
-
+    
 * The methods from these packages are in caret's namespace, so we don't need to call them explicitly.
 
 * This is a new release.
