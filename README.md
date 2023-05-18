@@ -13,6 +13,6 @@ pheble is a software package for classifying high-dimensional phenotypes with en
 
 <code> install.packages("devtools") </code>
 
-<code> devtools::devtools::install_github(“jaydevine/pheble”) </code>
+<code> devtools::install_github(“jaydevine/pheble”) </code>
 
 For any questions, you can contact the author via email: jay.devine1@ucalgary.ca
