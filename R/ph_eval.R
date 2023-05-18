@@ -1,10 +1,10 @@
 #' Evaluate a phenotype classification model.
 #'
-#' The \code{ph_eval} function generates a confusion matrix for binary or multi-class classification; for the multi-class case, the results are averaged across all class levels.
+#' The \code{ph_eval} function generates a confusion matrix for binary or multi-class classification; for the multi-class case, the results are averaged across class levels.
 #'
 #' @param pred A \code{factor} value of predicted classes.
 #' @param obs A \code{factor} value of the observed or actual classes.
-#' @returns A \code{data.frame} of confusion matrix evaluation results; for the multi-class case, the results are averaged across all class levels.
+#' @returns A \code{data.frame} of confusion matrix evaluation results; for the multi-class case, the results are averaged across class levels.
 #' @export
 #' @examples
 #' ## Import data.

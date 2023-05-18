@@ -1,7 +1,7 @@
 #' Generate predictions for phenotype ensemble.
 #'
 #' The \code{ph_train} function automatically trains a set of binary or multi-class classification models to ultimately
-#' build a new dataset of predictions. The data preprocessing and hyperparameter tuning are handled internally to
+#' build a new dataset of predictions. The data pre-processing and hyperparameter tuning are handled internally to
 #' minimize user input and simplify the training.
 #'
 #' @param train_df A \code{data.frame} containing a class column and the training data.

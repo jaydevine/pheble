@@ -3,7 +3,7 @@
 #' The \code{ph_ensemble} function uses classification predictions from a list of algorithms to train an ensemble model.
 #' This can be a list of manually trained algorithms from \code{train} or, more conveniently, the output from \code{ph_train}.
 #' The hyperparameter tuning and model evaluations are handled internally to simplify the ensembling process. This function
-#' assumes some preprocessing has been performed, hence the training, validation, and test set requirements.
+#' assumes some pre-processing has been performed, hence the training, validation, and test set requirements.
 #'
 #' @param train_models A \code{list} of at least two \code{train} models.
 #' @param train_df A \code{data.frame} containing a class column and the training data.
