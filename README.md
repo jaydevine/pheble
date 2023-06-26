@@ -5,7 +5,7 @@ pheble is a software package for classifying high-dimensional phenotypes with en
 
 <i> Within R:</i>
 
-<code> install.packages("pheble", dependencies=TRUE)) </code>
+<code> install.packages("pheble", dependencies=TRUE) </code>
 
 ### To install the current pheble R package from Github using devtools:
 
